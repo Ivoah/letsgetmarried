@@ -1,0 +1,15 @@
+@font-face {
+  font-family: 'Eczar';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/static/Eczar.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'IM Fell English SC';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/static/IMFellEnglishSC.ttf) format('truetype');
+}

@@ -1,0 +1,133 @@
+@import url('/static/fonts.css');
+
+body {
+  font-family: "Eczar", serif;
+  max-width: 750px;
+  margin: 8px auto;
+  padding: 50px;
+  text-align: center;
+  color: #231f20;
+  font-weight: 400;
+  background: #FCF5E5;
+  letter-spacing: 2px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "IM Fell English SC", serif;
+  font-weight: normal;
+  margin: 8px 0;
+}
+
+h1 {
+  font-size: 42pt;
+  letter-spacing: 6px;
+}
+
+h2 {
+  font-size: 24pt;
+}
+
+a {
+  color: inherit;
+  transition-property: filter, border-bottom;
+  transition-duration: 200ms;
+}
+
+a:hover {
+  filter: drop-shadow(0px 0px 1.5px black);
+}
+
+img {
+  width: 100%;
+}
+
+#header {
+  .suites {
+    display: flex;
+    justify-content: center;
+    margin: 100px 0;
+
+    > img {
+      width: 100px;
+    }
+  }
+  > #tabbar {
+    margin: 15px 0 50px 0;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    text-transform: none;
+  }
+}
+
+.tab {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 0 solid;
+  /*transition: all 200ms;*/
+}
+
+.underline, .tab:hover {
+  border-bottom: 2px solid;
+}
+
+.markdown {
+  text-align: justify;
+  text-indent: 2em;
+}
+
+.location {
+  border-top: 1px #AAA solid;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  text-align: left;
+
+  > h3 {
+    text-align: right;
+  }
+
+  > * {
+    flex-basis: 50%;
+  }
+}
+
+#wedding_party {
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+
+    > div > div {
+      margin: 25px;
+
+      > h3 {
+        font-weight: bold;
+      }
+
+      > p {
+        text-align: justify;
+        text-indent: 2em;
+      }
+    }
+
+    @media(min-width: 500px) {
+      > div {
+        flex-basis: 50%;
+      }
+    }
+  }
+}
+
+#footer {
+  margin-top: 50px;
+
+  > h1 {
+    width: fit-content;
+    margin: auto;
+  }
+
+  > p {
+    font-size: 8pt;
+  }
+}

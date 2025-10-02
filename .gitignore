@@ -1,0 +1,7 @@
+.bsp/
+.idea/
+.metals/
+out/
+
+application.conf
+details.yaml
