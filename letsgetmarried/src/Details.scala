@@ -6,8 +6,8 @@ import scalatags.Text.all.*
 import java.time.LocalDate
 import scala.io.Source
 
-given YamlDecoder[LocalDate] = YamlDecoder[LocalDate] {
-  case node: Node => node.as[String].left.map{case err: ConstructError => err}.map(LocalDate.parse)
+private given YamlDecoder[LocalDate] = YamlDecoder[LocalDate] {
+  case node: Node => node.as[String].left.map(_.asInstanceOf[ConstructError]).map(LocalDate.parse)
 }
 
 private case class YamlDetails(

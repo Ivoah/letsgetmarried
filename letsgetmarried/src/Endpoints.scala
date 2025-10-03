@@ -12,6 +12,6 @@ class Endpoints() {
     case ("GET", "/registry", _) => Response(Templates.registry())
     case ("GET", "/rsvp", _) => Response(Templates.rsvp())
 
-    case ("GET", s"/static/$file", _) => Response.forFile(Paths.get(s"static/$file"), None, Map("Cache-Control" -> Seq("max-age=3600")))
+    case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
   }
 }
