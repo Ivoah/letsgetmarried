@@ -11,6 +11,7 @@ private given YamlDecoder[LocalDate] = YamlDecoder[LocalDate] {
 }
 
 private case class YamlDetails(
+  underConstruction: Boolean,
   groom: String,
   bride: String,
   hero: String,
@@ -19,10 +20,14 @@ private case class YamlDetails(
   locations: Seq[Location],
   story: Story,
   bridesmaids: Seq[PartyMember],
-  groomsmen: Seq[PartyMember]
+  groomsmen: Seq[PartyMember],
+  registry: Seq[RegistryItem]
 ) derives YamlDecoder
+
 case class Location(name: String, time: String, address: String, link: String, details: String) derives YamlCodec
+
 case class Story(title: String, body: String) derives YamlCodec
+
 case class PartyMember(name: String, role: String, bio: String) derives YamlCodec {
   def render: Frag = div(
     div(
@@ -31,6 +36,8 @@ case class PartyMember(name: String, role: String, bio: String) derives YamlCode
     )
   )
 }
+
+case class RegistryItem(name: String, url: String, image: String, count: Int, price: Double) derives YamlCodec
 
 val Details = Source.fromResource("details.yaml").getLines().mkString("\n").as[YamlDetails] match {
   case Left(err) => throw err

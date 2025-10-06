@@ -30,6 +30,7 @@ object Templates {
     p(`class`:="suites",
       Seq("heart", "club", "diamond", "spade").map(suite => img(src:=s"/static/$suite.png"))
     ),
+    if (Details.underConstruction) h3("Website under construction - information subject to change") else frag(),
     h1(s"${Details.groom.split(" ").head} & ${Details.bride.split(" ").head}"),
     h3(s"${fullformat.format(Details.date)} • ${Details.location}"),
     h3({
@@ -85,7 +86,7 @@ object Templates {
   )
 
   def registry(): String = page("Registry")(
-    for (item <- Registry.items) yield a(href:=item.url, div(
+    for (item <- Details.registry) yield a(href:=item.url, div(
       span(item.name),
       img(src:=item.image)
     ))

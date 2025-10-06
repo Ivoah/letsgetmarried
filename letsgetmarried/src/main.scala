@@ -3,8 +3,6 @@ package net.ivoah.letsgetmarried
 import org.rogach.scallop.*
 import net.ivoah.vial.*
 
-import java.time.LocalDate
-
 @main
 def main(args: String*): Unit = {
   class Conf(args: Seq[String]) extends ScallopConf(args) {
