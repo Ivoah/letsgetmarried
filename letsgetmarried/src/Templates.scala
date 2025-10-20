@@ -26,7 +26,7 @@ object Templates {
     link(rel:="stylesheet", href:=s"/static/style.css"),
   )
 
-  private def header(currentPage: String) = div(id:="header",
+  private def _header(currentPage: String) = header(
     p(`class`:="suites",
       Seq("heart", "club", "diamond", "spade").map(suite => img(src:=s"/static/$suite.png"))
     ),
@@ -43,7 +43,7 @@ object Templates {
     })
   )
 
-  private def footer() = div(id:="footer",
+  private def _footer() = footer(
     h1(`class`:="underline", s"${Details.groom.head}&${Details.bride.head}"),
     shortformat.format(Details.date),
     p("Created from scratch"),
@@ -53,14 +53,14 @@ object Templates {
   private def page(name: String)(content: Frag*) = doctype("html")(html(
     _head(name),
     body(
-      header(name),
+      _header(name),
       div(id:=name.toLowerCase.replace(" ", "_"), content),
-      footer()
+      _footer()
     )
   )).render
 
   def home(): String = page("Home")(
-   img(src:=Details.hero),
+   img(src:=Details.image),
     h2(s"The wedding of ${Details.groom} & ${Details.bride}"),
     h3(fullformat.format(Details.date)),
     for (location <- Details.locations) yield div(`class`:="location",
@@ -85,12 +85,62 @@ object Templates {
     )}
   )
 
-  def registry(): String = page("Registry")(
-    for (item <- Details.registry) yield a(href:=item.url, div(
-      span(item.name),
-      img(src:=item.image)
-    ))
+  def registry(sortBy: String): String = page("Registry")(
+    "Sort by: ", Seq(
+      ("None", "none"),
+      ("Price (low to high)", "priceLowHigh"),
+      ("Price (high to low)", "priceHighLow"),
+    ).flatMap {
+      case (display, value) => Seq(a(href:=s"/registry?sortBy=$value", display), frag(", "))
+    }.init,
+    div(id:="registryItems",
+      for (item <- Details.registry.sortBy(sortBy match {
+        case "priceLowHigh" => _.price
+        case "priceHighLow" => -_.price
+        case _ => _ => 0.0
+      })) yield div(a(href:=item.link,
+        img(src:=item.image),
+        span(item.name),
+        span(s"$$${item.price}")
+      ))
+    )
   )
 
-  def rsvp(): String = page("RSVP")()
+  def rsvp(): String = page("RSVP")(
+    form(action:="/rsvp", method:="GET",
+      input(
+        `type`:="search",
+        name:="name",
+        placeholder:="Full name",
+      ),
+      input(`type`:="submit", value:="Find your invitation")
+    )
+  )
+
+  def rsvpFound(invitee: Invitee, rsvp: Option[RSVP]): String = page("RSVP")(
+    form(action:="/rsvp", method:="POST",
+      fieldset(
+        legend(s"RSVP for ${invitee.name}"),
+        input(`type`:="hidden", name:="name", value:=invitee.name),
+        label("Attending?", input(`type`:="checkbox", name:="attending", if (rsvp.exists(_.attending)) checked else frag())), br(),
+        label("Number of infants: ", input(`type`:="number", name:="infants", value:=rsvp.map(_.infants).getOrElse(0))), br(),
+        label("Number of children: ", input(`type`:="number", name:="children", value:=rsvp.map(_.children).getOrElse(0))),
+        fieldset(
+          legend("Also RSVP for"),
+          invitee.linked.map { linked =>
+            label(input(`type`:="checkbox", name:=linked), linked)
+          }
+        ),
+        input(`type`:="submit", value:="Save RSVP")
+      )
+    ),
+  )
+
+  def rsvpNotFound(name: String): String = page("RSVP")(
+    p(s"Could not find an invitation for $name. Please make sure you entered your full first and last name.")
+  )
+
+  def rsvpSaved(): String = page("RSVP")(
+    p("Thank you! Your RSVP has been saved.")
+  )
 }
