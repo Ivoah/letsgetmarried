@@ -86,35 +86,45 @@ object Templates {
   )
 
   def registry(sortBy: String): String = page("Registry")(
-    "Sort by: ", Seq(
-      ("None", "none"),
-      ("Price (low to high)", "priceLowHigh"),
-      ("Price (high to low)", "priceHighLow"),
-    ).flatMap {
-      case (display, value) => Seq(a(href:=s"/registry?sortBy=$value", display), frag(", "))
-    }.init,
-    div(id:="registryItems",
-      for (item <- Details.registry.sortBy(sortBy match {
-        case "priceLowHigh" => _.price
-        case "priceHighLow" => -_.price
-        case _ => _ => 0.0
-      })) yield div(a(href:=item.link,
-        img(src:=item.image),
-        span(item.name),
-        span(s"$$${item.price}")
-      ))
-    )
+    if (Details.registry.isEmpty) {
+      p(textAlign.center, "Coming soon!")
+    } else {
+      frag(
+        "Sort by: ", Seq(
+          ("None", "none"),
+          ("Price (low to high)", "priceLowHigh"),
+          ("Price (high to low)", "priceHighLow"),
+        ).flatMap {
+          case (display, value) => Seq(a(href:=s"/registry?sortBy=$value", display), frag(", "))
+        }.init,
+        div(id:="registryItems",
+          for (item <- Details.registry.sortBy(sortBy match {
+            case "priceLowHigh" => _.price
+            case "priceHighLow" => -_.price
+            case _ => _ => 0.0
+          })) yield div(a(href:=item.link,
+            img(src:=item.image),
+            span(item.name),
+            span(s"$$${item.price}")
+          ))
+        )
+      )
+    }
   )
 
   def rsvp(): String = page("RSVP")(
-    form(action:="/rsvp", method:="GET",
-      input(
-        `type`:="search",
-        name:="name",
-        placeholder:="Full name",
-      ),
-      input(`type`:="submit", value:="Find your invitation")
-    )
+    if (Details.invitees.isEmpty) {
+      p(textAlign.center, "Coming soon!")
+    } else {
+      form(action:="/rsvp", method:="GET",
+        input(
+          `type`:="search",
+          name:="name",
+          placeholder:="Full name",
+        ),
+        input(`type`:="submit", value:="Find your invitation")
+      )
+    }
   )
 
   def rsvpFound(invitee: Invitee, rsvp: Option[RSVP]): String = page("RSVP")(
@@ -133,7 +143,7 @@ object Templates {
         ),
         input(`type`:="submit", value:="Save RSVP")
       )
-    ),
+    )
   )
 
   def rsvpNotFound(name: String): String = page("RSVP")(
