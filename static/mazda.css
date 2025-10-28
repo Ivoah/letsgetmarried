@@ -1,0 +1,37 @@
+@font-face {
+  font-family: "Mazda Type";
+  src: url("/static/mazda-type-regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Mazda Type";
+  src: url("/static/mazda-type-italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Mazda Type";
+  src: url("/static/mazda-type-medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Mazda Type";
+  src: url("/static/mazda-type-bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+}
+
+body {
+  font-family: "Mazda Type", sans-serif !important;
+  line-height: 1.5 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Mazda Type", sans-serif !important;
+  text-transform: uppercase !important;
+}

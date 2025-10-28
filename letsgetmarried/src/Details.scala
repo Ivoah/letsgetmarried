@@ -1,7 +1,6 @@
 package net.ivoah.letsgetmarried
 
 import org.virtuslab.yaml.*
-import scalatags.Text.all.*
 
 import java.time.LocalDate
 import scala.io.Source
@@ -28,19 +27,8 @@ private case class YamlDetails(
 ) derives YamlDecoder
 
 case class Location(name: String, time: String, address: String, link: String, details: String) derives YamlCodec
-
 case class Story(title: String, body: String) derives YamlCodec
-
-case class PartyMember(name: String, role: String, image: String, bio: String) derives YamlCodec {
-  def render: Frag = div(
-    div(
-      h3(s"$name - $role"),
-      img(src:=image),
-      Markdown.render(bio)
-    )
-  )
-}
-
+case class PartyMember(name: String, role: String, image: String, bio: String) derives YamlCodec
 case class RegistryItem(name: String, link: String, image: String, count: Int, price: Double) derives YamlCodec
 
 case class Invitee(name: String, linked: Seq[String]) derives YamlCodec {

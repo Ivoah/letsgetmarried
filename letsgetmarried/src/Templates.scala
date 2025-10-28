@@ -4,10 +4,25 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import scalatags.Text.all.*
 import scalatags.Text.tags2.title
+import net.ivoah.vial.Request
 
 import java.time.format.DateTimeFormatter
 
-object Templates {
+val words = raw"\w+".r
+extension (s: String) {
+  def scramble: String = words.replaceAllIn(s, m => {
+    val w = m.matched
+    if (w.length >= 3) s"${w.head}${util.Random.shuffle(w.drop(1).dropRight(1))}${w.last}"
+    else w
+  })
+}
+
+class Templates(request: Request) {
+  given Conversion[String, StringFrag] = (s: String) => StringFrag(
+    if (request.cookies.exists(_.name == "scramble")) s.scramble
+    else s
+  )
+
   private val tabs = Seq(
     "Home" -> "/",
     "Our Story" -> "/story",
@@ -22,6 +37,7 @@ object Templates {
   private def _head(_title: String) = head(
     title(s"${Details.groom.split(" ").head} & ${Details.bride.split(" ").head} - $_title"),
     script(src:="/static/konami.js"),
+    if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
     link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
     link(rel:="stylesheet", href:=s"/static/style.css"),
   )
@@ -53,6 +69,20 @@ object Templates {
   private def page(name: String)(content: Frag*) = doctype("html")(html(
     _head(name),
     body(
+      tag("dialog")(id:="settings", attr("closedby"):="any",
+        form(method:="POST", action:="/settings",
+          fieldset(
+            legend("Super secret settings"),
+            table(
+              for (setting <- Templates.settings) yield tr(
+                td(input(`type`:="checkbox", `id`:=setting, attr("name"):=setting, if (request.cookies.exists(_.name == setting)) checked else frag())),
+                td(label(`for`:=setting, setting.capitalize))
+              )
+            ),
+            input(`type`:="submit", value:="Save settings")
+          )
+        )
+      ),
       _header(name),
       div(id:=name.toLowerCase.replace(" ", "_"), content),
       _footer()
@@ -78,10 +108,17 @@ object Templates {
     div(`class`:="markdown", Markdown.render(Details.story.body))
   )
 
+  private def partyMember(member: PartyMember) = div(
+    div(
+      h3(s"${member.name} - ${member.role}"),
+      img(src:=member.image),
+      Markdown.render(member.bio)
+    )
+  )
   def party(): String = page("Wedding Party")(
     Details.bridesmaids.zip(Details.groomsmen).map { (bridesmaid, groomsman) => div(
-      bridesmaid.render,
-      groomsman.render
+      partyMember(bridesmaid),
+      partyMember(groomsman)
     )}
   )
 
@@ -153,4 +190,8 @@ object Templates {
   def rsvpSaved(): String = page("RSVP")(
     p("Thank you! Your RSVP has been saved.")
   )
+}
+
+object Templates {
+  val settings = Seq("mazda", "scramble")
 }
