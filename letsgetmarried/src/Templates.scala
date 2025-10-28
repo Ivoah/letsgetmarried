@@ -79,7 +79,7 @@ class Templates(request: Request) {
                 td(label(`for`:=setting, setting.capitalize))
               )
             ),
-            input(`type`:="submit", value:="Save settings")
+            button("Save settings")
           )
         )
       ),
