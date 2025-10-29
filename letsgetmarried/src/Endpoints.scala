@@ -31,7 +31,7 @@ class Endpoints() {
           }
       }
     case ("POST", "/settings", r) =>
-      Templates.settings.foldLeft(Response.Redirect(r.headers("Referer").head)) { (response, setting) =>
+      Templates.settings.foldLeft(Response.Redirect(r.headers.get("Referer").map(_.head).getOrElse("/"))) { (response, setting) =>
         response.withCookie(r.form.get(setting) match {
           case Some(v: String) => Cookie(setting, v)
           case _ => Cookie(setting, "", maxAge = Some(0))
