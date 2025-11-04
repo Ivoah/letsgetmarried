@@ -1,0 +1,6 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="16,0 32,8 16,16 0,8" fill="rgb(183,8,21)" transform="translate(16,0)" />
+    <polygon points="8,0 16,16 8,32 0,16" fill="rgb(183,8,21)" transform="translate(48,16)" />
+    <polygon points="16,0 32,8 16,16 0,8" fill="rgb(183,8,21)" transform="translate(16,48)" />
+    <polygon points="8,0 16,16 8,32 0,16" fill="rgb(183,8,21)" transform="translate(0,16)" />
+</svg>

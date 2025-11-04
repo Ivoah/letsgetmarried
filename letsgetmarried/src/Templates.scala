@@ -31,8 +31,10 @@ class Templates(request: Request) {
     "RSVP" -> "/rsvp"
   )
 
-  private val fullformat = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")
+  private val fullformat  = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")
   private val shortformat = DateTimeFormatter.ofPattern("M.d.y")
+  private val weekday     = DateTimeFormatter.ofPattern("EEEE")
+  private val timefmt     = DateTimeFormatter.ofPattern("h:mm a")
 
   private def _head(_title: String) = head(
     title(s"${Details.groom.split(" ").head} & ${Details.bride.split(" ").head} - $_title"),
@@ -110,11 +112,12 @@ class Templates(request: Request) {
 
   private def partyMember(member: PartyMember) = div(
     div(
-      h3(s"${member.name} - ${member.role}"),
+      h3(member.name, br(), member.role),
       img(src:=member.image),
       Markdown.render(member.bio)
     )
   )
+
   def party(): String = page("Wedding Party")(
     Details.bridesmaids.zip(Details.groomsmen).map { (bridesmaid, groomsman) => div(
       partyMember(bridesmaid),
@@ -190,6 +193,59 @@ class Templates(request: Request) {
   def rsvpSaved(): String = page("RSVP")(
     p("Thank you! Your RSVP has been saved.")
   )
+
+  def invitation(): String = doctype("html")(html(
+    head(
+      link(rel:="stylesheet", href:=s"/static/style.css"),
+      if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
+      link(rel:="stylesheet", href:=s"/static/invitation.css"),
+      link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
+      title("Invitation")
+    ),
+    body(
+      div(id:="front",
+        div(id:="b1", `class`:="border",
+          div(id:="b2", `class`:="border",
+            div(id:="b3", `class`:="border",
+              div(id:="b4", `class`:="border",
+                div(id:="tl", `class`:="corner",
+                  h2(Details.bride.head.toString),
+                  h1(`class`:="heart", "♥")
+                ),
+                div(id:="br", `class`:="corner",
+                  h2(Details.groom.head.toString),
+                  h1(`class`:="heart", "♥")
+                ),
+                div(`class`:="center",
+                  div(
+                    p(em(Details.invitation.tagline)),
+                    div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),
+                    p(s"${Details.invitation.parents} warmly invite you to the wedding of"),
+                    p(
+                      h2(Details.bride),
+                      h2("&"),
+                      h2(Details.groom),
+                    ),
+                    p(id:="date", weekday.format(Details.date), span(shortformat.format(Details.date)), timefmt.format(Details.date)),
+                    Markdown.render(Details.invitation.details),
+                    div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),
+                    p("Get details and RSVP at", br(), em(Details.invitation.url))
+                  )
+                )
+              )
+            )
+          )
+        )
+      ),
+      div(id:="back",
+        div(
+          h2("LRM"),
+          h1("♥", lineHeight:=0.8),
+          h2("NMR")
+        )
+      )
+    )
+  )).render
 }
 
 object Templates {
