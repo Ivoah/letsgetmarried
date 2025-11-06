@@ -23,14 +23,16 @@ private case class YamlDetails(
   story: Story,
   bridesmaids: Seq[PartyMember],
   groomsmen: Seq[PartyMember],
+  photos: Seq[Photo],
   registry: Seq[RegistryItem],
   invitees: Seq[Invitee]
 ) derives YamlDecoder
 
 case class Invitation(tagline: String, parents: String, details: String, url: String) derives YamlCodec
 case class Location(name: String, time: String, address: String, link: String, details: String) derives YamlCodec
-case class Story(title: String, body: String) derives YamlCodec
+case class Story(title: String, image: String, body: String) derives YamlCodec
 case class PartyMember(name: String, role: String, image: String, bio: String) derives YamlCodec
+case class Photo(image: String, caption: String) derives YamlCodec
 case class RegistryItem(name: String, link: String, image: String, count: Int, price: Double) derives YamlCodec
 
 case class Invitee(name: String, linked: Seq[String]) derives YamlCodec {

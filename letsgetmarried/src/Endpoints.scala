@@ -9,6 +9,7 @@ class Endpoints() {
     case ("GET" , "/", r) => Response(Templates(r).home())
     case ("GET", "/story", r) => Response(Templates(r).story())
     case ("GET", "/party", r) => Response(Templates(r).party())
+    case ("GET", "/photos", r) => Response(Templates(r).photos())
     case ("GET", "/registry", r) => Response(Templates(r).registry(r.params.getOrElse("sortBy", "")))
     case ("GET", s"/rsvp", r) =>
       r.params.get("name") match {
@@ -41,6 +42,6 @@ class Endpoints() {
     case ("GET", "/invitation", r) => Response(Templates(r).invitation())
 //    case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
     case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file))
-    case ("GET", s"/photos/$file", _) => Response.forFile(Paths.get("photos"), Paths.get(file))
+    case ("GET", s"/photos/$file", _) => Response.forFile(Paths.get("photos"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
   }
 }

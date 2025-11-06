@@ -134,6 +134,12 @@ footer {
   }
 }
 
+#our_story {
+  img {
+    width: 60%;
+  }
+}
+
 #wedding_party {
   > div {
     display: flex;
@@ -157,6 +163,44 @@ footer {
         flex-basis: 50%;
       }
     }
+  }
+}
+
+#photos {
+  display: grid;
+  /*grid-template-columns: repeat(3, 33.33%);*/
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+  figure {
+    margin: 0;
+    width: 75%;
+    place-self: center;
+    background: white;
+    border: solid 10px white;
+
+    transition-property: width, transform;
+    transition-duration: 200ms;
+  }
+
+  figure:hover {
+    width: 200%;
+    transform: rotate(0deg) !important;
+    z-index: 1;
+  }
+
+  figure > div {
+    display: grid;
+    grid-template-columns: 1fr 15px;
+    align-items: end;
+
+    img {
+      display: block;
+    }
+  }
+
+  iframe {
+    width: 100%;
+    height: 150%;
   }
 }
 

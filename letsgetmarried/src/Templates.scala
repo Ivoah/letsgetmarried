@@ -1,5 +1,6 @@
 package net.ivoah.letsgetmarried
 
+import scala.util.Random
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import scalatags.Text.all.*
@@ -27,6 +28,7 @@ class Templates(request: Request) {
     "Home" -> "/",
     "Our Story" -> "/story",
     "Wedding Party" -> "/party",
+    "Photos" -> "/photos",
     "Registry" -> "/registry",
     "RSVP" -> "/rsvp"
   )
@@ -107,6 +109,7 @@ class Templates(request: Request) {
 
   def story(): String = page("Our Story")(
     h2(Details.story.title),
+    img(src:=Details.story.image),
     div(`class`:="markdown", Markdown.render(Details.story.body))
   )
 
@@ -123,6 +126,19 @@ class Templates(request: Request) {
       partyMember(bridesmaid),
       partyMember(groomsman)
     )}
+  )
+
+  def photos(): String = page("Photos")(
+    Details.photos.map { p =>
+      figure(css("transform"):=s"rotate(${Random.between(-15.0, 15.0)}deg)",
+        img(src:=p.image),
+        div(figcaption(raw(p.caption)), a(href:=p.image, download:="", img(src:="/static/download.svg")))
+      )
+    },
+    script(raw(
+      """for (const figure of document.getElementsByTagName("figure")) {
+        |  figure.addEventListener("mouseenter", e => e.target.style.transform = `rotate(${Math.random() * 30 - 15}deg)`);
+        |}""".stripMargin))
   )
 
   def registry(sortBy: String): String = page("Registry")(
