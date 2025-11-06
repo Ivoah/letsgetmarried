@@ -172,6 +172,7 @@ footer {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 
   figure {
+    box-sizing: border-box;
     margin: 0;
     width: 75%;
     place-self: center;
@@ -183,7 +184,7 @@ footer {
   }
 
   figure:hover {
-    width: 200%;
+    width: min(200%, 100vw);
     transform: rotate(0deg) !important;
     z-index: 1;
   }
@@ -208,13 +209,10 @@ footer {
   text-align: left;
 
   #registryItems {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
 
     > div {
-      flex-basis: 25%;
-      text-decoration: none;
-
       > a {
         display: block;
         margin: 10px;
