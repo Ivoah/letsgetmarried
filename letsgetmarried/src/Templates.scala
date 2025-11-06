@@ -40,6 +40,7 @@ class Templates(request: Request) {
 
   private def _head(_title: String) = head(
     title(s"${Details.groom.split(" ").head} & ${Details.bride.split(" ").head} - $_title"),
+    meta(name:="viewport", content:="width=device-width", attr("initial-scale"):="1.0"),
     script(src:="/static/konami.js"),
     if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
     link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
