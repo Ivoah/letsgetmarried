@@ -246,7 +246,7 @@ class Templates(request: Request) {
                     p(id:="date", weekday.format(Details.date), span(shortformat.format(Details.date)), timefmt.format(Details.date)),
                     Markdown.render(Details.invitation.details),
                     div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),
-                    p("Get details and RSVP at", br(), em(Details.invitation.url))
+                    p("Get details and RSVP at", br(), em(Details.invitation.url), br(), s"Please RSVP by ${shortformat.format(Details.invitation.deadline)}")
                   )
                 )
               )

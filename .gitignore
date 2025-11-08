@@ -3,5 +3,8 @@
 .metals/
 out/
 
+photos/
+originals/
 application.conf
 details.yaml
+database.db

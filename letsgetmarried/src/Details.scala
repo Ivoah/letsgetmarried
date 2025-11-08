@@ -2,8 +2,12 @@ package net.ivoah.letsgetmarried
 
 import org.virtuslab.yaml.*
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import scala.io.Source
+
+private given YamlDecoder[LocalDate] = YamlDecoder[LocalDate] {
+  case node: Node => node.as[String].left.map(_.asInstanceOf[ConstructError]).map(LocalDate.parse)
+}
 
 private given YamlDecoder[LocalDateTime] = YamlDecoder[LocalDateTime] {
   case node: Node => node.as[String].left.map(_.asInstanceOf[ConstructError]).map(LocalDateTime.parse)
@@ -28,7 +32,7 @@ private case class YamlDetails(
   invitees: Seq[Invitee]
 ) derives YamlDecoder
 
-case class Invitation(tagline: String, parents: String, details: String, url: String) derives YamlCodec
+case class Invitation(tagline: String, parents: String, details: String, url: String, deadline: LocalDate) derives YamlDecoder
 case class Location(name: String, time: String, address: String, link: String, details: String) derives YamlCodec
 case class Story(title: String, image: String, body: String) derives YamlCodec
 case class PartyMember(name: String, role: String, image: String, bio: String) derives YamlCodec
