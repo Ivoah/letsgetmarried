@@ -256,9 +256,9 @@ class Templates(request: Request) {
       ),
       div(id:="back",
         div(
-          h2("LRM"),
+          h2(Details.bride.split(raw"\s+").map(_.head).mkString),
           h1("♥", lineHeight:=0.8),
-          h2("NMR")
+          h2(Details.groom.split(raw"\s+").map(_.head).mkString)
         )
       )
     )
