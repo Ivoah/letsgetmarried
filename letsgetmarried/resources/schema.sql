@@ -1,10 +1,11 @@
-drop table link;
+drop table rsvpLink;
 drop table rsvp;
-drop table registry;
+drop table registryPurchase;
 
-create table registry (
-    item           TEXT,
-    purchasedAt    INTEGER,
+create table registryPurchase (
+    id             TEXT,
+    amount         INTEGER,
+    purchasedAt    DATETIME,
     purchasedBy    TEXT
 );
 
@@ -16,7 +17,7 @@ create table rsvp (
     updated   DATETIME
 );
 
-create table link (
+create table rsvpLink (
     original TEXT REFERENCES rsvp(name),
     linked   TEXT REFERENCES rsvp(name)
 );

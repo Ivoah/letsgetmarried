@@ -7,6 +7,7 @@ import scalatags.Text.all.*
 import scalatags.Text.tags2.title
 import net.ivoah.vial.Request
 
+import java.net.URI
 import java.time.format.DateTimeFormatter
 
 val words = raw"\w+".r
@@ -24,6 +25,13 @@ class Templates(request: Request) {
     else s
   )
 
+  private val fullformat  = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")
+  private val shortformat = DateTimeFormatter.ofPattern("M.d.y")
+  private val weekday     = DateTimeFormatter.ofPattern("EEEE")
+  private val timefmt     = DateTimeFormatter.ofPattern("h:mm a")
+
+  private val dialog = tag("dialog")(attr("closedby"):="any")
+
   private val tabs = Seq(
     "Home" -> "/",
     "Our Story" -> "/story",
@@ -32,11 +40,6 @@ class Templates(request: Request) {
     "Registry" -> "/registry",
     "RSVP" -> "/rsvp"
   )
-
-  private val fullformat  = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")
-  private val shortformat = DateTimeFormatter.ofPattern("M.d.y")
-  private val weekday     = DateTimeFormatter.ofPattern("EEEE")
-  private val timefmt     = DateTimeFormatter.ofPattern("h:mm a")
 
   private def _head(_title: String) = head(
     title(s"${Details.groom.split(" ").head} & ${Details.bride.split(" ").head} - $_title"),
@@ -48,7 +51,7 @@ class Templates(request: Request) {
   )
 
   private def _header(currentPage: String) = header(
-    p(`class`:="suites",
+    p(cls:="suites",
       Seq("heart", "club", "diamond", "spade").map(suite => img(src:=s"/static/$suite.png"))
     ),
     if (Details.underConstruction) h3("Website under construction - information subject to change") else frag(),
@@ -60,12 +63,12 @@ class Templates(request: Request) {
       else "Today's the day! The sun is shining, the tank is clean!"
     }),
     div(id:="tabbar", for ((name, address) <- tabs) yield {
-      a(`class`:=(if (name == currentPage) "tab underline" else "tab"), href:=address, name)
+      a(cls:=(if (name == currentPage) "tab underline" else "tab"), href:=address, name)
     })
   )
 
   private def _footer() = footer(
-    h1(`class`:="underline", s"${Details.groom.head}&${Details.bride.head}"),
+    h1(cls:="underline", s"${Details.groom.head}&${Details.bride.head}"),
     shortformat.format(Details.date),
     p("Created from scratch"),
     p("Getting married? ", a(href:="https://github.com/ivoah/letsgetmarried", "Create your wedding website for free."))
@@ -74,7 +77,7 @@ class Templates(request: Request) {
   private def page(name: String)(content: Frag*) = doctype("html")(html(
     _head(name),
     body(
-      tag("dialog")(id:="settings", attr("closedby"):="any",
+      dialog(id:="settings",
         form(method:="POST", action:="/settings",
           fieldset(
             legend("Super secret settings"),
@@ -98,7 +101,7 @@ class Templates(request: Request) {
    img(src:=Details.image),
     h2(s"The wedding of ${Details.groom} & ${Details.bride}"),
     h3(fullformat.format(Details.date)),
-    for (location <- Details.locations) yield div(`class`:="location",
+    for (location <- Details.locations) yield div(cls:="location",
       h3(location.time),
       div(
         h3(location.name),
@@ -111,7 +114,7 @@ class Templates(request: Request) {
   def story(): String = page("Our Story")(
     h2(Details.story.title),
     img(src:=Details.story.image),
-    div(`class`:="markdown", Markdown.render(Details.story.body))
+    div(cls:="markdown", Markdown.render(Details.story.body))
   )
 
   private def partyMember(member: PartyMember) = div(
@@ -159,11 +162,33 @@ class Templates(request: Request) {
             case "priceLowHigh" => _.price
             case "priceHighLow" => -_.price
             case _ => _ => 0.0
-          })) yield div(a(href:=item.link,
-            img(src:=item.image),
-            span(item.name),
-            span(s"$$${item.price}")
-          ))
+          })) yield {
+            val purchasedCount = item.purchased()
+            frag(
+              div(cls:=(if (purchasedCount >= item.count) "hoverGlow disabled" else "hoverGlow"), onclick:=s"""document.getElementById("${item.id}").showModal()""",
+                img(src:=item.image),
+                div(cls:="details",
+                  span(item.name),
+                  div(span(f"$$${item.price}%.2f"), span(s"$purchasedCount/${item.count}"))
+                )
+              ),
+              dialog(id:=s"${item.id}", div(
+                input(`type`:="image", onclick:=s"""document.getElementById("${item.id}").close()""", src:="/static/close.svg"),
+                div(
+                  p(item.name),
+                  img(src:=item.image),
+                  form(
+                    fieldset(
+                      legend("Mark as purchased"),
+                      label("Purchased by: ", input(`type`:="text")), br(),
+                      label("Quantity: ", input(`type`:="number"))
+                    )
+                  ),
+                  p("Purchase at ", a(href:=item.link, URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")))
+                )
+              ))
+            )
+          }
         )
       )
     }
@@ -204,7 +229,7 @@ class Templates(request: Request) {
   )
 
   def rsvpNotFound(name: String): String = page("RSVP")(
-    p(s"Could not find an invitation for $name. Please make sure you entered your full first and last name.")
+    p(s"Could not find an invitation for $name. Please make sure you entered your full first and last name. Contact ", a(href:=s"mailto:${Details.contact}", Details.contact), " if you believe this is in error.")
   )
 
   def rsvpSaved(): String = page("RSVP")(
@@ -221,23 +246,23 @@ class Templates(request: Request) {
     ),
     body(
       div(id:="front",
-        div(id:="b1", `class`:="border",
-          div(id:="b2", `class`:="border",
-            div(id:="b3", `class`:="border",
-              div(`class`:="gridBorder", css("grid-area"):="n", (0 until 25).map(_ => img(src:="static/diamond.svg"))),
-              div(`class`:="gridBorder", css("grid-area"):="s", (0 until 25).map(_ => img(src:="static/diamond.svg"))),
-              div(`class`:="gridBorder side", css("grid-area"):="e", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
-              div(`class`:="gridBorder side", css("grid-area"):="w", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
-              div(id:="b4", `class`:="border",
-                div(id:="tl", `class`:="corner",
+        div(id:="b1", cls:="border",
+          div(id:="b2", cls:="border",
+            div(id:="b3", cls:="border",
+              div(cls:="gridBorder", css("grid-area"):="n", (0 until 25).map(_ => img(src:="static/diamond.svg"))),
+              div(cls:="gridBorder", css("grid-area"):="s", (0 until 25).map(_ => img(src:="static/diamond.svg"))),
+              div(cls:="gridBorder side", css("grid-area"):="e", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
+              div(cls:="gridBorder side", css("grid-area"):="w", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
+              div(id:="b4", cls:="border",
+                div(id:="tl", cls:="corner",
                   h2(Details.bride.head.toString),
-                  h1(`class`:="heart", "♥")
+                  h1(cls:="heart", "♥")
                 ),
-                div(id:="br", `class`:="corner",
+                div(id:="br", cls:="corner",
                   h2(Details.groom.head.toString),
-                  h1(`class`:="heart", "♥")
+                  h1(cls:="heart", "♥")
                 ),
-                div(`class`:="center",
+                div(cls:="center",
                   div(
                     p(em(Details.invitation.tagline)),
                     div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),

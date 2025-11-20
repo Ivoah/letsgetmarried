@@ -17,6 +17,7 @@ given Database("jdbc:sqlite:database.db")
 
 private case class YamlDetails(
   underConstruction: Boolean,
+  contact: String,
   groom: String,
   bride: String,
   image: String,
@@ -37,11 +38,20 @@ case class Location(name: String, time: String, address: String, link: String, d
 case class Story(title: String, image: String, body: String) derives YamlCodec
 case class PartyMember(name: String, role: String, image: String, bio: String) derives YamlCodec
 case class Photo(image: String, caption: String) derives YamlCodec
-case class RegistryItem(name: String, link: String, image: String, count: Int, price: Double) derives YamlCodec
+case class RegistryItem(name: String, id: String, link: String, image: String, count: Int, price: Double) derives YamlCodec {
+  def purchased(): Int = sql"SELECT sum(amount) purchased FROM registryPurchase WHERE id=$id".query(_.getInt("purchased")).headOption.getOrElse(0)
+
+  def purchase(purchasedBy: String) = {
+    sql"""
+      INSERT INTO registryPurchase
+      VALUES ($id, datetime('now', 'localtime'), purchasedBy)
+    """
+  }
+}
 
 case class Invitee(name: String, linked: Seq[String]) derives YamlCodec {
   def findRSVP(): Option[RSVP] = {
-    val links = sql"SELECT linked FROM link WHERE original=$name".query(_.getString("linked"))
+    val links = sql"SELECT linked FROM rsvpLink WHERE original=$name".query(_.getString("linked"))
     sql"SELECT * FROM rsvp WHERE name=$name".query { r => RSVP(
       r.getString("name"),
       r.getBoolean("attending"),
@@ -55,17 +65,17 @@ case class Invitee(name: String, linked: Seq[String]) derives YamlCodec {
 case class RSVP(name: String, attending: Boolean, infants: Int, children: Int, links: Seq[String]) {
   def saveToDatabase(): Unit = {
     sql"""
-    INSERT INTO rsvp
-    VALUES ($name, $attending, $infants, $children, datetime('now', 'localtime'))
-    ON CONFLICT(name)
-    DO UPDATE SET
-      attending=$attending,
-      infants=$infants,
-      children=$children,
-      updated=datetime('now', 'localtime')
-  """.update()
+      INSERT INTO rsvp
+      VALUES ($name, $attending, $infants, $children, datetime('now', 'localtime'))
+      ON CONFLICT(name)
+      DO UPDATE SET
+        attending=$attending,
+        infants=$infants,
+        children=$children,
+        updated=datetime('now', 'localtime')
+    """.update()
 
-    (sql"INSERT INTO link VALUES " + links.map(linked => sql"($name, $linked)").reduce(_ + _)).update()
+    (sql"INSERT INTO rsvpLink VALUES " + links.map(linked => sql"($name, $linked)").reduce(_ + _)).update()
   }
 }
 

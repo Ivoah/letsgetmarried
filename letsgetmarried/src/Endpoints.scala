@@ -22,14 +22,14 @@ class Endpoints() {
       }
     case ("POST", s"/rsvp", r) =>
       r.form.expect("name", "infants", "children") { (name: String, infants: String, children: String) =>
-          Details.invitees.find(_.name == name) match {
-            case Some(invitee) =>
-              val rsvp = RSVP(invitee.name, true, infants.toInt, children.toInt, Seq())
-              rsvp.saveToDatabase()
-              Response(Templates(r).rsvpSaved())
-            case None =>
-              Response.BadRequest()
-          }
+        Details.invitees.find(_.name == name) match {
+          case Some(invitee) =>
+            val rsvp = RSVP(invitee.name, true, infants.toInt, children.toInt, Seq())
+            rsvp.saveToDatabase()
+            Response(Templates(r).rsvpSaved())
+          case None =>
+            Response.BadRequest()
+        }
       }
     case ("POST", "/settings", r) =>
       Templates.settings.foldLeft(Response.Redirect(r.headers.get("Referer").map(_.head).getOrElse("/"))) { (response, setting) =>
