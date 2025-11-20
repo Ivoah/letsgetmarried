@@ -1,6 +1,6 @@
-drop table rsvpLink;
-drop table rsvp;
-drop table registryPurchase;
+drop table if exists rsvpLink;
+drop table if exists rsvp;
+drop table if exists registryPurchase;
 
 create table registryPurchase (
     id             TEXT,
