@@ -99,6 +99,7 @@ body {
   }
 
   img {
+    display: inline;
     width: 16px;
   }
 
