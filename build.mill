@@ -7,7 +7,7 @@ object letsgetmarried extends ScalaModule {
   def scalaVersion = "3.3.6"
   def mvnDeps = Seq(
     mvn"org.rogach::scallop::5.2.0",
-    mvn"net.ivoah::vial:0.8.4",
+    mvn"net.ivoah::vial:0.8.5",
     mvn"com.lihaoyi::scalatags:0.13.1",
     mvn"org.virtuslab::scala-yaml:0.3.0",
     mvn"org.commonmark:commonmark:0.26.0",

@@ -13,6 +13,12 @@ private given YamlDecoder[LocalDateTime] = YamlDecoder[LocalDateTime] {
   case node: Node => node.as[String].left.map(_.asInstanceOf[ConstructError]).map(LocalDateTime.parse)
 }
 
+private given YamlDecoder[InviteStatus] = YamlDecoder[InviteStatus] {
+  case node: Node => node.as[String]
+    .left.map(_.asInstanceOf[ConstructError])
+    .flatMap(s => InviteStatus.values.find(_.key == s).toRight(ConstructError(s"Could not decode InviteStatus", Some(node), Some(InviteStatus.values.map(_.key).mkString(", ")))))
+}
+
 given Database("jdbc:sqlite:database.db")
 
 private case class YamlDetails(
@@ -23,17 +29,17 @@ private case class YamlDetails(
   image: String,
   date: LocalDateTime,
   location: String,
-  invitation: Invitation,
+  invitationDetails: InvitationDetails,
   locations: Seq[Location],
   story: Story,
   bridesmaids: Seq[PartyMember],
   groomsmen: Seq[PartyMember],
   photos: Seq[Photo],
   registry: Seq[RegistryItem],
-  invitees: Seq[Invitee]
+  invitations: Seq[Invitation]
 ) derives YamlDecoder
 
-case class Invitation(tagline: String, parents: String, details: String, url: String, deadline: LocalDate) derives YamlDecoder
+case class InvitationDetails(tagline: String, parents: String, details: String, url: String, deadline: LocalDate) derives YamlDecoder
 case class Location(name: String, time: String, address: String, link: String, details: String) derives YamlCodec
 case class Story(title: String, image: String, body: String) derives YamlCodec
 case class PartyMember(name: String, role: String, image: String, bio: String) derives YamlCodec
@@ -49,33 +55,35 @@ case class RegistryItem(name: String, id: String, link: String, image: String, c
   }
 }
 
-case class Invitee(name: String, linked: Seq[String]) derives YamlCodec {
+enum InviteStatus(val key: String) {
+  case Invited extends InviteStatus("invited")
+  case NotInvited extends InviteStatus("not-invited")
+  case NotApplicable extends InviteStatus("n/a")
+}
+
+case class Invitation(name: String, people: Seq[String], children: InviteStatus, plusone: Boolean) derives YamlDecoder {
   def findRSVP(): Option[RSVP] = {
-    val links = sql"SELECT linked FROM rsvpLink WHERE original=$name".query(_.getString("linked"))
-    sql"SELECT * FROM rsvp WHERE name=$name".query { r => RSVP(
+    sql"SELECT * FROM rsvp WHERE name=$name".query(r => RSVP(
       r.getString("name"),
-      r.getBoolean("attending"),
-      r.getInt("infants"),
+      r.getInt("adults"),
       r.getInt("children"),
-      links
-    )}.headOption
+      r.getInt("infants")
+    )).headOption
   }
 }
 
-case class RSVP(name: String, attending: Boolean, infants: Int, children: Int, links: Seq[String]) {
+case class RSVP(name: String, adults: Int, children: Int, infants: Int) {
   def saveToDatabase(): Unit = {
     sql"""
       INSERT INTO rsvp
-      VALUES ($name, $attending, $infants, $children, datetime('now', 'localtime'))
+      VALUES ($name, $adults, $children, $infants, datetime('now', 'localtime'))
       ON CONFLICT(name)
       DO UPDATE SET
-        attending=$attending,
-        infants=$infants,
+        adults=$adults,
         children=$children,
+        infants=$infants,
         updated=datetime('now', 'localtime')
     """.update()
-
-    (sql"INSERT INTO rsvpLink VALUES " + links.map(linked => sql"($name, $linked)").reduce(_ + _)).update()
   }
 }
 

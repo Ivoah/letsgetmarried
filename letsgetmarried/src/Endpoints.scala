@@ -14,22 +14,24 @@ class Endpoints() {
     case ("GET", s"/rsvp", r) =>
       r.params.get("name") match {
         case Some(name) =>
-          Details.invitees.find(_.name.equalsIgnoreCase(name)) match {
-            case Some(invitee) => Response(Templates(r).rsvpFound(invitee, invitee.findRSVP()))
+          Details.invitations.find(_.people.exists(_.equalsIgnoreCase(name))) match {
+            case Some(invitation) => Response(Templates(r).rsvpFound(invitation, invitation.findRSVP()))
             case None => Response(Templates(r).rsvpNotFound(name))
           }
         case None => Response(Templates(r).rsvp())
       }
     case ("POST", s"/rsvp", r) =>
-      r.form.expect("name", "infants", "children") { (name: String, infants: String, children: String) =>
-        Details.invitees.find(_.name == name) match {
-          case Some(invitee) =>
-            val rsvp = RSVP(invitee.name, true, infants.toInt, children.toInt, Seq())
-            rsvp.saveToDatabase()
-            Response(Templates(r).rsvpSaved())
-          case None =>
-            Response.BadRequest()
-        }
+      val name = r.form("name").asInstanceOf[String]
+      val adults = r.form("adults").asInstanceOf[String].toInt
+      val children = r.form.get("children").map(_.asInstanceOf[String].toInt).getOrElse(0)
+      val infants = r.form.get("infants").map(_.asInstanceOf[String].toInt).getOrElse(0)
+      Details.invitations.find(_.name == name) match {
+        case Some(invitation) =>
+          val rsvp = RSVP(invitation.name, adults, children, infants)
+          rsvp.saveToDatabase()
+          Response(Templates(r).rsvpSaved())
+        case None =>
+          Response.BadRequest()
       }
     case ("POST", "/settings", r) =>
       Templates.settings.foldLeft(Response.Redirect(r.headers.get("Referer").map(_.head).getOrElse("/"))) { (response, setting) =>

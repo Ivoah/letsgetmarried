@@ -1,6 +1,7 @@
 .bsp/
 .idea/
 .metals/
+.vscode/
 out/
 
 photos/

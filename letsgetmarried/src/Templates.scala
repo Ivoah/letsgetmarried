@@ -74,8 +74,8 @@ class Templates(request: Request) {
     p("Getting married? ", a(href:="https://github.com/ivoah/letsgetmarried", "Create your wedding website for free."))
   )
 
-  private def page(name: String)(content: Frag*) = doctype("html")(html(
-    _head(name),
+  private def page(name: String, _title: Option[String] = None)(content: Frag*) = doctype("html")(html(
+    _head(_title.getOrElse(name)),
     body(
       dialog(id:="settings",
         form(method:="POST", action:="/settings",
@@ -195,7 +195,7 @@ class Templates(request: Request) {
   )
 
   def rsvp(): String = page("RSVP")(
-    if (Details.invitees.isEmpty) {
+    if (Details.invitations.isEmpty) {
       p(textAlign.center, "Coming soon!")
     } else {
       form(action:="/rsvp", method:="GET",
@@ -209,27 +209,35 @@ class Templates(request: Request) {
     }
   )
 
-  def rsvpFound(invitee: Invitee, rsvp: Option[RSVP]): String = page("RSVP")(
+  def rsvpFound(invitation: Invitation, rsvp: Option[RSVP]): String = page("RSVP", Some(s"RSVP for ${invitation.name}"))(
     form(action:="/rsvp", method:="POST",
       fieldset(
-        legend(s"RSVP for ${invitee.name}"),
-        input(`type`:="hidden", name:="name", value:=invitee.name),
-        label("Attending?", input(`type`:="checkbox", name:="attending", if (rsvp.exists(_.attending)) checked else frag())), br(),
-        label("Number of infants: ", input(`type`:="number", name:="infants", value:=rsvp.map(_.infants).getOrElse(0))), br(),
-        label("Number of children: ", input(`type`:="number", name:="children", value:=rsvp.map(_.children).getOrElse(0))),
-        fieldset(
-          legend("Also RSVP for"),
-          invitee.linked.map { linked =>
-            label(input(`type`:="checkbox", name:=linked), linked)
-          }
-        ),
+        legend(s"RSVP for ${invitation.name}"),
+        "How many people will be attending?",
+        invitation.children match {
+          case InviteStatus.Invited => " Please indicate how many children you are bringing and if they will need a seat at the table."
+          case InviteStatus.NotInvited => " Due to space limitations we are unable to accommodate your children."
+          case _ => frag()
+        },
+        if (invitation.plusone) " You may bring a plus one."
+        else frag(),
+        br(),
+        input(`type`:="hidden", name:="name", value:=invitation.name),
+        label("Adults: ", input(`type`:="number", name:="adults", min:=0, max:=(invitation.people.size + (if (invitation.plusone) 1 else 0)), value:=rsvp.map(_.adults).getOrElse(0))), br(),
+        invitation.children match {
+          case InviteStatus.Invited => frag(
+            label("Children: ", input(`type`:="number", name:="children", min:=0, max:=9, value:=rsvp.map(_.children).getOrElse(0))), br(),
+            label("Infants: ", input(`type`:="number", name:="infants", min:=0, max:=9, value:=rsvp.map(_.infants).getOrElse(0))),
+          )
+          case _ => frag()
+        },
         input(`type`:="submit", value:="Save RSVP")
       )
     )
   )
 
   def rsvpNotFound(name: String): String = page("RSVP")(
-    p(s"Could not find an invitation for $name. Please make sure you entered your full first and last name. Contact ", a(href:=s"mailto:${Details.contact}", Details.contact), " if you believe this is in error.")
+    p(s"Could not find an invitation for $name. Please make sure you entered your full first and last name as it appears on your invitation. Contact ", a(href:=s"mailto:${Details.contact}", Details.contact), " if you believe this is in error.")
   )
 
   def rsvpSaved(): String = page("RSVP")(
@@ -264,18 +272,18 @@ class Templates(request: Request) {
                 ),
                 div(cls:="center",
                   div(
-                    p(em(Details.invitation.tagline)),
+                    p(em(Details.invitationDetails.tagline)),
                     div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),
-                    p(s"${Details.invitation.parents} warmly invite you to the wedding of"),
+                    p(s"${Details.invitationDetails.parents} warmly invite you to the wedding of"),
                     p(
                       h2(Details.bride),
                       h2("&"),
                       h2(Details.groom),
                     ),
                     p(id:="date", weekday.format(Details.date), span(shortformat.format(Details.date)), timefmt.format(Details.date)),
-                    Markdown.render(Details.invitation.details),
+                    Markdown.render(Details.invitationDetails.details),
                     div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),
-                    p("Get details and RSVP at", br(), em(Details.invitation.url), br(), s"Please RSVP by ${shortformat.format(Details.invitation.deadline)}")
+                    p("Get details and RSVP at", br(), em(Details.invitationDetails.url), br(), s"Please RSVP by ${shortformat.format(Details.invitationDetails.deadline)}")
                   )
                 )
               )
