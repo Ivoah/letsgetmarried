@@ -14,7 +14,7 @@ class Endpoints() {
     case ("GET", s"/rsvp", r) =>
       r.params.get("name") match {
         case Some(name) =>
-          Details.invitations.find(_.people.exists(_.equalsIgnoreCase(name))) match {
+          Details.invitations.find(invite => (invite.people :+ invite.name).exists(_.equalsIgnoreCase(name.strip().split("\\s+").mkString(" ")))) match {
             case Some(invitation) => Response(Templates(r).rsvpFound(invitation, invitation.findRSVP()))
             case None => Response(Templates(r).rsvpNotFound(name))
           }
