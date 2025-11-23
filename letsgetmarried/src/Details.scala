@@ -73,7 +73,7 @@ case class Invitation(name: String, people: Seq[String], children: InviteStatus,
 }
 
 case class RSVP(name: String, adults: Int, children: Int, infants: Int) {
-  def saveToDatabase(): Unit = {
+  def saveToDatabase(): Boolean = {
     sql"""
       INSERT INTO rsvp
       VALUES ($name, $adults, $children, $infants, datetime('now', 'localtime'))
@@ -83,7 +83,7 @@ case class RSVP(name: String, adults: Int, children: Int, infants: Int) {
         children=$children,
         infants=$infants,
         updated=datetime('now', 'localtime')
-    """.update()
+    """.update() == 1
   }
 }
 

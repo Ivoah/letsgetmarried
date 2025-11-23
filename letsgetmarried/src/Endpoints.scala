@@ -28,8 +28,12 @@ class Endpoints() {
       Details.invitations.find(_.name == name) match {
         case Some(invitation) =>
           val rsvp = RSVP(invitation.name, adults, children, infants)
-          rsvp.saveToDatabase()
-          Response(Templates(r).rsvpSaved())
+          if (rsvp.saveToDatabase()) {
+            Email.sendEmails(s"Received RSVP for $name", s"Received RSVP for $name.\n\nAdults: $adults\nChildren: $children\nInfants: $infants").left.foreach(println)
+            Response(Templates(r).rsvpSaved())
+          } else {
+            throw Exception("Could not save RSVP")
+          }
         case None =>
           Response.BadRequest()
       }
