@@ -142,7 +142,8 @@ class Templates(request: Request) {
     script(raw(
       """for (const figure of document.getElementsByTagName("figure")) {
         |  figure.addEventListener("mouseenter", e => e.target.style.transform = `rotate(${Math.random() * 30 - 15}deg)`);
-        |}""".stripMargin))
+        |}""".stripMargin
+    ))
   )
 
   def registry(sortBy: String): String = page("Registry")(
