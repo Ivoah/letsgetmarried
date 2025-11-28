@@ -3,9 +3,9 @@ drop table if exists registryPurchase;
 
 create table registryPurchase (
     id             TEXT,
-    amount         INTEGER,
     purchasedAt    DATETIME,
-    purchasedBy    TEXT
+    purchasedBy    TEXT,
+    quantity       INTEGER
 );
 
 create table rsvp (

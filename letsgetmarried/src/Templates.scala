@@ -31,6 +31,8 @@ class Templates(request: Request) {
   private val timefmt     = DateTimeFormatter.ofPattern("h:mm a")
 
   private val dialog = tag("dialog")(attr("closedby"):="any")
+  private def openDialog(id: String) = s"""document.getElementById("$id").showModal()"""
+  private def closeDialog(id: String) = s"""document.getElementById("$id").close()"""
 
   private val tabs = Seq(
     "Home" -> "/",
@@ -166,7 +168,7 @@ class Templates(request: Request) {
           })) yield {
             val purchasedCount = item.purchased()
             frag(
-              div(cls:=(if (purchasedCount >= item.count) "hoverGlow disabled" else "hoverGlow"), onclick:=s"""document.getElementById("${item.id}").showModal()""",
+              div(cls:=(if (purchasedCount >= item.count) "hoverGlow disabled" else "hoverGlow"), onclick:=openDialog(item.id),
                 img(src:=item.image),
                 div(cls:="details",
                   span(item.name),
@@ -174,18 +176,28 @@ class Templates(request: Request) {
                 )
               ),
               dialog(id:=s"${item.id}", div(
-                input(`type`:="image", onclick:=s"""document.getElementById("${item.id}").close()""", src:="/static/close.svg"),
+                input(`type`:="image", onclick:=closeDialog(item.id), src:="/static/close.svg"),
                 div(
                   p(item.name),
                   img(src:=item.image),
-                  form(
-                    fieldset(
-                      legend("Mark as purchased"),
-                      label("Purchased by: ", input(`type`:="text")), br(),
-                      label("Quantity: ", input(`type`:="number"))
-                    )
+                  fieldset(
+                    legend("Mark as purchased"),
+                    form(method:="POST", action:=s"/registry/${item.id}",
+                      label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
+                      label("Quantity: ", input(`type`:="number", name:="quantity")),
+                      dialog(id:=s"${item.id}-confirm", div(
+                        input(`type`:="image", onclick:=closeDialog(s"${item.id}-confirm"), src:="/static/close.svg"),
+                        div(
+                          s"Are you sure you want to mark ${item.name} as purchased? This action cannot be undone.",
+                          input(`type`:="submit", value:="Mark as purchased")
+                        )
+                      ))
+                    ),
+                    input(`type`:="submit", value:="Mark as purchased", onclick:=openDialog(s"${item.id}-confirm"))
                   ),
-                  p("Purchase at ", a(href:=item.link, URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")))
+                  form(method:="GET", action:=item.link, target:="_blank",
+                    input(`type`:="submit", value:=s"Purchase at ${URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")}")
+                  )
                 )
               ))
             )

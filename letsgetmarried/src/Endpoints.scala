@@ -11,6 +11,19 @@ class Endpoints() {
     case ("GET", "/party", r) => Response(Templates(r).party())
     case ("GET", "/photos", r) => Response(Templates(r).photos())
     case ("GET", "/registry", r) => Response(Templates(r).registry(r.params.getOrElse("sortBy", "")))
+    case ("POST", s"/registry/$id", r) =>
+      Details.registry.find(_.id == id) match {
+        case Some(item) =>
+          r.form.expect("purchasedBy", "quantity") { (purchasedBy: String, quantity: String) =>
+            quantity.toIntOption.map { quantity =>  
+              if (item.purchase(purchasedBy, quantity)) Response.Redirect("/registry")
+              else Response.InternalServerError("Could not mark item as purchased")
+            } getOrElse {
+              Response.BadRequest()
+            }
+          }
+        case None => Response.NotFound()
+      }
     case ("GET", s"/rsvp", r) =>
       r.params.get("name") match {
         case Some(name) =>
