@@ -179,24 +179,24 @@ class Templates(request: Request) {
               div(
                 p(item.name),
                 img(src:=item.image),
-                fieldset(
-                  legend("Mark as purchased"),
-                  form(method:="POST", action:=s"/registry/${item.id}",
-                    label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
-                    label("Quantity: ", input(`type`:="number", name:="quantity")),
-                    dialog(id:=s"${item.id}-confirm", div(
-                      input(`type`:="image", onclick:=closeDialog(s"${item.id}-confirm"), src:="/static/close.svg"),
-                      div(
-                        s"Are you sure you want to mark ${item.name} as purchased? This action cannot be undone.",
-                        input(`type`:="submit", value:="Mark as purchased")
-                      )
-                    ))
-                  ),
-                  input(`type`:="submit", value:="Mark as purchased", onclick:=openDialog(s"${item.id}-confirm"))
-                ),
                 form(method:="GET", action:=item.link, target:="_blank",
                   input(`type`:="submit", value:=s"Purchase at ${URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")}")
-                )
+                ),
+                input(`type`:="submit", value:="Mark as purchased", onclick:=openDialog(s"${item.id}-purchase")),
+                dialog(id:=s"${item.id}-purchase", div(
+                  input(`type`:="image", onclick:=closeDialog(s"${item.id}-purchase"), src:="/static/close.svg"),
+                  div(
+                    fieldset(
+                      legend("Mark as purchased"),
+                      form(method:="POST", action:=s"/registry/${item.id}",
+                        label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
+                        label("Quantity: ", input(`type`:="number", name:="quantity")), br(),
+                        s"Please make sure you have entered the information correctly. This action cannot be undone.",
+                        input(`type`:="submit", value:="Mark as purchased")
+                      )
+                    )
+                  )
+                ))
               )
             ))
           )
