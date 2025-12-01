@@ -44,14 +44,17 @@ a:hover, input[type=submit]:hover, input[type=image]:hover, .hoverGlow:hover {
   filter: drop-shadow(0px 0px 1.5px black);
 }
 
-input[type=submit] {
+input[type=search], input[type=submit] {
   width: 100%;
   line-height: 2;
-  color: white;
-  border: none;
-  border-radius: 5px;
   margin: 5px 0;
-  background: darkred;
+  
+  &[type=submit] {
+    color: white;
+    border: none;
+    border-radius: 5px;
+    background: darkred;
+  }
 }
 
 img {
@@ -301,12 +304,6 @@ footer {
 #rsvp {
   max-width: 500px;
   margin: auto;
-
-  input[type=search] {
-    width: 100%;
-    margin: 5px;
-    line-height: 2;
-  }
 
   form {
     text-align: left;
