@@ -11,6 +11,7 @@ object letsgetmarried extends ScalaModule {
     mvn"com.lihaoyi::scalatags:0.13.1",
     mvn"org.virtuslab::scala-yaml:0.3.0",
     mvn"org.commonmark:commonmark:0.26.0",
+    mvn"org.commonmark:commonmark-ext-gfm-strikethrough:0.19.0",
     mvn"org.xerial:sqlite-jdbc:3.50.3.0",
     mvn"org.slf4j:slf4j-simple:2.0.17",
     mvn"com.softwaremill.sttp.client4::core:4.0.8",

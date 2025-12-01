@@ -229,6 +229,10 @@ footer {
 #registry {
   text-align: left;
 
+  .centered {
+    text-align: center;
+  }
+
   #registryItems {
     display: grid;
     gap: 10px;

@@ -31,8 +31,8 @@ class Templates(request: Request) {
   private val timefmt     = DateTimeFormatter.ofPattern("h:mm a")
 
   private val dialog = tag("dialog")(attr("closedby"):="any")
-  private def openDialog(id: String) = s"""document.getElementById("$id").showModal()"""
-  private def closeDialog(id: String) = s"""document.getElementById("$id").close()"""
+  private def openDialog(id: String) = s"""document.getElementById("$id").showModal(); return false;"""
+  private def closeDialog(id: String) = s"""document.getElementById("$id").close(); return false;"""
 
   private val tabs = Seq(
     "Home" -> "/",
@@ -138,7 +138,7 @@ class Templates(request: Request) {
     Details.photos.map { p =>
       figure(css("transform"):=s"rotate(${Random.between(-15.0, 15.0)}deg)",
         img(src:=p.image),
-        div(figcaption(raw(p.caption)), a(href:=p.image, download:="", img(src:="/static/download.svg")))
+        div(figcaption(p.caption.map(Markdown.render(_)).getOrElse(frag())), a(href:=p.image, download:="", img(src:="/static/download.svg")))
       )
     },
     script(raw(
@@ -149,62 +149,60 @@ class Templates(request: Request) {
   )
 
   def registry(sortBy: String): String = page("Registry")(
-    if (Details.registry.isEmpty) {
-      p(textAlign.center, "Coming soon!")
-    } else {
-      frag(
-        "Sort by: ", Seq(
-          ("None", "none"),
-          ("Price (low to high)", "priceLowHigh"),
-          ("Price (high to low)", "priceHighLow"),
-        ).flatMap {
-          case (display, value) => Seq(a(href:=s"/registry?sortBy=$value", display), frag(", "))
-        }.init,
-        div(id:="registryItems",
-          for (item <- Details.registry.sortBy(sortBy match {
-            case "priceLowHigh" => _.price
-            case "priceHighLow" => -_.price
-            case _ => _ => 0.0
-          })) yield {
-            val purchasedCount = item.purchased()
-            frag(
-              div(cls:=(if (purchasedCount >= item.count) "hoverGlow disabled" else "hoverGlow"), onclick:=openDialog(item.id),
+    if (Details.registry.isEmpty) p(textAlign.center, "Coming soon!")
+    else frag(
+      p("Please send all packages to"), div(cls:="centered", Markdown.render(Details.registryAddress)),
+      "Sort by: ", Seq(
+        ("None", "none"),
+        ("Price (low to high)", "priceLowHigh"),
+        ("Price (high to low)", "priceHighLow"),
+      ).flatMap {
+        case (display, value) => Seq(a(href:=s"/registry?sortBy=$value", display), frag(", "))
+      }.init,
+      div(id:="registryItems",
+        for (item <- Details.registry.sortBy(sortBy match {
+          case "priceLowHigh" => _.price
+          case "priceHighLow" => -_.price
+          case _ => _ => 0.0
+        })) yield {
+          val purchasedCount = item.purchased()
+          frag(
+            div(cls:=(if (purchasedCount >= item.count) "hoverGlow disabled" else "hoverGlow"), onclick:=openDialog(item.id),
+              img(src:=item.image),
+              div(cls:="details",
+                span(item.name),
+                div(span(f"$$${item.price}%.2f"), span(s"$purchasedCount/${item.count}"))
+              )
+            ),
+            dialog(id:=s"${item.id}", div(
+              input(`type`:="image", onclick:=closeDialog(item.id), src:="/static/close.svg"),
+              div(
+                p(item.name),
                 img(src:=item.image),
-                div(cls:="details",
-                  span(item.name),
-                  div(span(f"$$${item.price}%.2f"), span(s"$purchasedCount/${item.count}"))
-                )
-              ),
-              dialog(id:=s"${item.id}", div(
-                input(`type`:="image", onclick:=closeDialog(item.id), src:="/static/close.svg"),
-                div(
-                  p(item.name),
-                  img(src:=item.image),
-                  fieldset(
-                    legend("Mark as purchased"),
-                    form(method:="POST", action:=s"/registry/${item.id}",
-                      label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
-                      label("Quantity: ", input(`type`:="number", name:="quantity")),
-                      dialog(id:=s"${item.id}-confirm", div(
-                        input(`type`:="image", onclick:=closeDialog(s"${item.id}-confirm"), src:="/static/close.svg"),
-                        div(
-                          s"Are you sure you want to mark ${item.name} as purchased? This action cannot be undone.",
-                          input(`type`:="submit", value:="Mark as purchased")
-                        )
-                      ))
-                    ),
-                    input(`type`:="submit", value:="Mark as purchased", onclick:=openDialog(s"${item.id}-confirm"))
+                fieldset(
+                  legend("Mark as purchased"),
+                  form(method:="POST", action:=s"/registry/${item.id}",
+                    label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
+                    label("Quantity: ", input(`type`:="number", name:="quantity")),
+                    dialog(id:=s"${item.id}-confirm", div(
+                      input(`type`:="image", onclick:=closeDialog(s"${item.id}-confirm"), src:="/static/close.svg"),
+                      div(
+                        s"Are you sure you want to mark ${item.name} as purchased? This action cannot be undone.",
+                        input(`type`:="submit", value:="Mark as purchased")
+                      )
+                    ))
                   ),
-                  form(method:="GET", action:=item.link, target:="_blank",
-                    input(`type`:="submit", value:=s"Purchase at ${URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")}")
-                  )
+                  input(`type`:="submit", value:="Mark as purchased", onclick:=openDialog(s"${item.id}-confirm"))
+                ),
+                form(method:="GET", action:=item.link, target:="_blank",
+                  input(`type`:="submit", value:=s"Purchase at ${URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")}")
                 )
-              ))
-            )
-          }
-        )
+              )
+            ))
+          )
+        }
       )
-    }
+    )
   )
 
   def rsvp(): String = page("RSVP")(

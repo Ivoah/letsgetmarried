@@ -7,7 +7,7 @@ import net.ivoah.vial.*
 def main(args: String*): Unit = {
   class Conf(args: Seq[String]) extends ScallopConf(args) {
     val host: ScallopOption[String] = opt[String](default = Some("127.0.0.1"))
-    val port: ScallopOption[Int] = opt[Int](default = Some(8000))
+    val port: ScallopOption[Int] = opt[Int](default = Some(4269))
     val socket: ScallopOption[String] = opt[String]()
     val verbose: ScallopOption[Boolean] = opt[Boolean](default = Some(false))
 

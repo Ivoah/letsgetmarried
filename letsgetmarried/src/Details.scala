@@ -35,6 +35,7 @@ private case class YamlDetails(
   bridesmaids: Seq[PartyMember],
   groomsmen: Seq[PartyMember],
   photos: Seq[Photo],
+  registryAddress: String,
   registry: Seq[RegistryItem],
   invitations: Seq[Invitation]
 ) derives YamlDecoder
@@ -43,7 +44,7 @@ case class InvitationDetails(tagline: String, parents: String, details: String, 
 case class Location(name: String, time: String, address: String, link: String, details: String) derives YamlCodec
 case class Story(title: String, image: String, body: String) derives YamlCodec
 case class PartyMember(name: String, role: String, image: String, bio: String) derives YamlCodec
-case class Photo(image: String, caption: String) derives YamlCodec
+case class Photo(image: String, caption: Option[String]) derives YamlCodec
 case class RegistryItem(name: String, id: String, link: String, image: String, count: Int, price: Double) derives YamlCodec {
   def purchased(): Int = sql"SELECT sum(quantity) purchased FROM registryPurchase WHERE id=$id".query(_.getInt("purchased")).headOption.getOrElse(0)
 
