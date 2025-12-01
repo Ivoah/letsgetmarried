@@ -227,7 +227,7 @@ class Templates(request: Request) {
         "How many people will be attending?",
         invitation.children match {
           case InviteStatus.Invited => " Please indicate how many children you are bringing and if they will need a seat at the table."
-          case InviteStatus.NotInvited => " Due to space limitations we are unable to accommodate your children."
+          case InviteStatus.NotInvited => " Due to space limitations we are only able to accommodate those listed on the invitation."
           case _ => frag()
         },
         if (invitation.plusone) " You may bring a plus one."
