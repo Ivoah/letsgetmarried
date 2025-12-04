@@ -44,17 +44,22 @@ a:hover, input[type=submit]:hover, input[type=image]:hover, .hoverGlow:hover {
   filter: drop-shadow(0px 0px 1.5px black);
 }
 
-input[type=search], input[type=submit] {
+input[type=search], input[type=submit], .button {
+  display: block;
   width: 100%;
-  line-height: 2;
+  font-family: "Eczar", serif;
+  font-size: 12pt;
   margin: 5px 0;
-  
-  &[type=submit] {
-    color: white;
-    border: none;
-    border-radius: 5px;
-    background: darkred;
-  }
+}
+
+input[type=submit], .button {
+  color: white;
+  border: none;
+  border-radius: 5px;
+  background: darkred;
+  text-align: center;
+  letter-spacing: normal;
+  text-decoration: none;
 }
 
 img {
