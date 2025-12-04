@@ -38,20 +38,22 @@ private case class YamlDetails(
   registryAddress: String,
   registry: Seq[RegistryItem],
   invitations: Seq[Invitation]
-) derives YamlDecoder
+) derives YamlDecoder {
+  require(registry.distinctBy(_.id).length == registry.length, "Duplicate id in registry list")
+}
 
 case class InvitationDetails(tagline: String, parents: String, details: String, url: String, deadline: LocalDate) derives YamlDecoder
 case class Location(name: String, time: String, address: String, link: String, details: String) derives YamlCodec
 case class Story(title: String, image: String, body: String) derives YamlCodec
 case class PartyMember(name: String, role: String, image: String, bio: String) derives YamlCodec
 case class Photo(image: String, caption: Option[String]) derives YamlCodec
-case class RegistryItem(name: String, id: String, link: String, image: String, count: Int, price: Double) derives YamlCodec {
-  def purchased(): Int = sql"SELECT sum(quantity) purchased FROM registryPurchase WHERE id=$id".query(_.getInt("purchased")).headOption.getOrElse(0)
+case class RegistryItem(name: String, id: String, link: String, image: String, price: Option[Double]) derives YamlCodec {
+  def purchased(): Boolean = price.nonEmpty && sql"SELECT count(*) > 0 FROM registryPurchase WHERE id=$id".query(_.getBoolean(1)).headOption.getOrElse(false)
 
-  def purchase(purchasedBy: String, quantity: Int): Boolean = {
+  def purchase(purchasedBy: String, amount: Option[Double]): Boolean = {
     sql"""
       INSERT INTO registryPurchase
-      VALUES ($id, datetime('now', 'localtime'), $purchasedBy, $quantity)
+      VALUES ($id, datetime('now', 'localtime'), $purchasedBy, ${amount.orNull})
     """.update() == 1
   }
 }

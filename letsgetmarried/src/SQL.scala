@@ -25,7 +25,7 @@ case class Query(parts: Seq[String], params: Seq[QueryParam | RawQuery]) {
   private def buildStatement(using db: Database): PreparedStatement = {
     val stmt = db.connection.prepareStatement(
       parts.zipAll(params, "", rsql"").map {
-        case (part, _: QueryParam) => s"$part?"
+        case (part, _: QueryParam | null) => s"$part?"
         case (part, param: RawQuery) => s"$part${param.query}"
       }.mkString,
       Statement.RETURN_GENERATED_KEYS

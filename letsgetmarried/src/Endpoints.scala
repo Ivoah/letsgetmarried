@@ -14,13 +14,15 @@ class Endpoints() {
     case ("POST", s"/registry/$id", r) =>
       Details.registry.find(_.id == id) match {
         case Some(item) =>
-          r.form.expect("purchasedBy", "quantity") { (purchasedBy: String, quantity: String) =>
-            quantity.toIntOption.map { quantity =>  
-              if (item.purchase(purchasedBy, quantity)) Response.Redirect("/registry")
+          r.form.expect("purchasedBy") { (purchasedBy: String) =>
+            (r.form.get("amount") match {
+              case Some(amount: String) if amount.toDoubleOption.nonEmpty => Right(Some(amount.toDouble))
+              case None => Right(None)
+              case _ => Left(Response.BadRequest())
+            }).map {amount =>
+              if (item.purchase(purchasedBy, amount)) Response.Redirect("/registry")
               else Response.InternalServerError("Could not mark item as purchased")
-            } getOrElse {
-              Response.BadRequest()
-            }
+            }.merge
           }
         case None => Response.NotFound()
       }

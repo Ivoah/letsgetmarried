@@ -65,6 +65,7 @@ img {
 
 dialog {
   position: fixed;
+  max-width: 750px;
   margin-top: 0;
   margin-bottom: 0;
   top: 50%;
@@ -246,18 +247,27 @@ footer {
       filter: brightness(60%);
     }
 
-    .disabled.hoverGlow:hover {
-      filter: brightness(60%) drop-shadow(0px 0px 1.5px black);
-    }
-
     > div {
       height: 100%;
-      display: block;
+      display: grid;
+      grid-template-areas: "center";
+      place-items: center;
       overflow: hidden;
       border: 1px solid lightgray;
       border-radius: 5px;
 
-      background: white;
+      * {
+        grid-area: center;
+      }
+
+      > div {
+        height: 100%;
+        background: white;
+      }
+
+      > img {
+        z-index: 1;
+      }
 
       img {
         aspect-ratio: 1/1;
@@ -269,10 +279,6 @@ footer {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        > div {
-          display: flex;
-          justify-content: space-between;
-        }
       }
     }
   }

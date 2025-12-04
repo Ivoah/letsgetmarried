@@ -151,37 +151,40 @@ class Templates(request: Request) {
   def registry(sortBy: String): String = page("Registry")(
     if (Details.registry.isEmpty) p(textAlign.center, "Coming soon!")
     else frag(
-      p("Please send all packages to"), div(cls:="centered", Markdown.render(Details.registryAddress)),
+      fieldset(
+        legend("Please send all packages to:"),
+        div(cls:="centered", Markdown.render(Details.registryAddress))
+      ),
       "Sort by: ", Seq(
         ("None", "none"),
         ("Price (low to high)", "priceLowHigh"),
         ("Price (high to low)", "priceHighLow"),
       ).flatMap {
-        case (display, value) => Seq(a(href:=s"/registry?sortBy=$value", display), frag(", "))
+        case (display, value) => Seq(a(href:=s"/registry?sortBy=$value#registry", display), frag(", "))
       }.init,
       div(id:="registryItems",
         for (item <- Details.registry.sortBy(sortBy match {
-          case "priceLowHigh" => _.price
-          case "priceHighLow" => -_.price
-          case _ => _ => 0.0
+          case "priceLowHigh" => (i: RegistryItem) => i.price.getOrElse(Double.PositiveInfinity)
+          case "priceHighLow" => (i: RegistryItem) => -i.price.getOrElse(Double.PositiveInfinity)
+          case _ => (i: RegistryItem) => 0.0 //-(i.count - i.purchased()).toDouble
         })) yield {
-          val purchasedCount = item.purchased()
           frag(
-            div(cls:=(if (purchasedCount >= item.count) "hoverGlow disabled" else "hoverGlow"), onclick:=openDialog(item.id),
-              img(src:=item.image),
-              div(cls:="details",
-                span(item.name),
-                div(span(f"$$${item.price}%.2f"), span(s"$purchasedCount/${item.count}"))
-              )
+            div(cls:="hoverGlow", onclick:=openDialog(item.id),
+              div(cls:=(if (item.purchased()) "disabled" else ""),
+                img(src:=item.image),
+                div(cls:="details",
+                  span(item.name),
+                  span(item.price.map(p => f"$$$p%.2f").getOrElse("$∞"))
+                )
+              ),
+              if (item.purchased()) img(src:="/static/purchased.svg", css("transform"):=s"rotate(${Random.between(-45.0, 45.0)}deg)") else frag()
             ),
             dialog(id:=s"${item.id}", div(
               input(`type`:="image", onclick:=closeDialog(item.id), src:="/static/close.svg"),
               div(
                 p(item.name),
                 img(src:=item.image),
-                form(method:="GET", action:=item.link, target:="_blank",
-                  input(`type`:="submit", value:=s"Purchase at ${URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")}")
-                ),
+                a(cls:="button", href:=item.link, target:="_blank", s"Purchase at ${URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")}"),
                 input(`type`:="submit", value:="Mark as purchased", onclick:=openDialog(s"${item.id}-purchase")),
                 dialog(id:=s"${item.id}-purchase", div(
                   input(`type`:="image", onclick:=closeDialog(s"${item.id}-purchase"), src:="/static/close.svg"),
@@ -190,8 +193,8 @@ class Templates(request: Request) {
                       legend("Mark as purchased"),
                       form(method:="POST", action:=s"/registry/${item.id}",
                         label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
-                        label("Quantity: ", input(`type`:="number", name:="quantity")), br(),
-                        s"Please make sure you have entered the information correctly. This action cannot be undone.",
+                        if (item.price.isEmpty) frag(label("Amount: ", input(`type`:="number", name:="amount", step:="0.01")), br()) else frag(),
+                        s"This does not buy the item, it only tells the bride and groom you have purchased it. Please make sure you have entered the information correctly. This action cannot be undone.",
                         input(`type`:="submit", value:="Mark as purchased")
                       )
                     )
