@@ -64,25 +64,25 @@ enum InviteStatus(val key: String) {
   case NotApplicable extends InviteStatus("n/a")
 }
 
-case class Invitation(name: String, people: Seq[String], children: InviteStatus, plusone: Boolean) derives YamlDecoder {
+case class Invitation(name: String, people: Seq[String], children: InviteStatus) derives YamlDecoder {
   def findRSVP(): Option[RSVP] = {
     sql"SELECT * FROM rsvp WHERE name=$name".query(r => RSVP(
       r.getString("name"),
-      r.getInt("adults"),
+      r.getString("people").split(","),
       r.getInt("children"),
       r.getInt("infants")
     )).headOption
   }
 }
 
-case class RSVP(name: String, adults: Int, children: Int, infants: Int) {
+case class RSVP(name: String, people: Seq[String], children: Int, infants: Int) {
   def saveToDatabase(): Boolean = {
     sql"""
       INSERT INTO rsvp
-      VALUES ($name, $adults, $children, $infants, datetime('now', 'localtime'))
+      VALUES ($name, ${people.mkString(",")}, $children, $infants, datetime('now', 'localtime'))
       ON CONFLICT(name)
       DO UPDATE SET
-        adults=$adults,
+        people=${people.mkString(",")},
         children=$children,
         infants=$infants,
         updated=datetime('now', 'localtime')

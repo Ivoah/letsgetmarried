@@ -227,17 +227,16 @@ class Templates(request: Request) {
     form(action:="/rsvp", method:="POST",
       fieldset(
         legend(s"RSVP for ${invitation.name}"),
-        "How many people will be attending?",
+        "Who will be attending?",
         invitation.children match {
           case InviteStatus.Invited => " Please indicate how many children you are bringing and if they will need a seat at the table."
           case InviteStatus.NotInvited => " Due to space limitations we are only able to accommodate those listed on the invitation."
           case _ => frag()
-        },
-        if (invitation.plusone) " You may bring a plus one."
-        else frag(),
-        br(),
+        }, br(),
         input(`type`:="hidden", name:="name", value:=invitation.name),
-        label("Adults: ", input(`type`:="number", name:="adults", min:=0, max:=(invitation.people.size + (if (invitation.plusone) 1 else 0)), value:=rsvp.map(_.adults).getOrElse(0))), br(),
+        for (person <- invitation.people) yield frag(
+          label(input(`type`:="checkbox", name:=person, if (rsvp.exists(_.people.contains(person))) checked else frag()), s" $person"), br()
+        ),
         invitation.children match {
           case InviteStatus.Invited => frag(
             label("Children: ", input(`type`:="number", name:="children", min:=0, max:=9, value:=rsvp.map(_.children).getOrElse(0))), br(),

@@ -10,7 +10,7 @@ create table registryPurchase (
 
 create table rsvp (
     name      TEXT PRIMARY KEY,
-    adults    INTEGER NOT NULL,
+    people    TEXT NOT NULL,
     children  INTEGER NOT NULL,
     infants   INTEGER NOT NULL,
     updated   DATETIME NOT NULL

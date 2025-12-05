@@ -36,21 +36,23 @@ class Endpoints() {
         case None => Response(Templates(r).rsvp())
       }
     case ("POST", s"/rsvp", r) =>
-      val name = r.form("name").asInstanceOf[String]
-      val adults = r.form("adults").asInstanceOf[String].toInt
-      val children = r.form.get("children").map(_.asInstanceOf[String].toInt).getOrElse(0)
-      val infants = r.form.get("infants").map(_.asInstanceOf[String].toInt).getOrElse(0)
-      Details.invitations.find(_.name == name) match {
-        case Some(invitation) =>
-          val rsvp = RSVP(invitation.name, adults, children, infants)
-          if (rsvp.saveToDatabase()) {
-            Email.sendEmails(s"Received RSVP for $name", s"Received RSVP for $name.\n\nAdults: $adults\nChildren: $children\nInfants: $infants").left.foreach(println)
-            Response(Templates(r).rsvpSaved())
-          } else {
-            throw Exception("Could not save RSVP")
-          }
-        case None =>
-          Response.BadRequest()
+      println(r.form)
+      r.form.expect("name") { (name: String) =>
+        val children = r.form.get("children").map(_.asInstanceOf[String].toInt).getOrElse(0)
+        val infants = r.form.get("infants").map(_.asInstanceOf[String].toInt).getOrElse(0)
+        Details.invitations.find(_.name == name) match {
+          case Some(invitation) =>
+            val people = invitation.people.filter(r.form.contains)
+            val rsvp = RSVP(invitation.name, people, children, infants)
+            if (rsvp.saveToDatabase()) {
+              Email.sendEmails(s"Received RSVP for $name", s"Received RSVP for $name.\n\nAdults: ${people.mkString(", ")}\nChildren: $children\nInfants: $infants").left.foreach(println)
+              Response(Templates(r).rsvpSaved())
+            } else {
+              throw Exception("Could not save RSVP")
+            }
+          case None =>
+            Response.BadRequest()
+        }
       }
     case ("POST", "/settings", r) =>
       Templates.settings.foldLeft(Response.Redirect(r.headers.get("Referer").map(_.head).getOrElse("/"))) { (response, setting) =>
