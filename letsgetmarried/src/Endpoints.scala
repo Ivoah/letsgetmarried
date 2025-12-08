@@ -1,10 +1,13 @@
 package net.ivoah.letsgetmarried
 
-import java.nio.file.Paths
+import com.typesafe.config.{Config, ConfigFactory}
 
+import java.nio.file.Paths
 import net.ivoah.vial.*
 
-class Endpoints() {
+class Endpoints {
+  given Config = ConfigFactory.load()
+
   def router: Router = Router {
     case ("GET" , "/", r) => Response(Templates(r).home())
     case ("GET", "/story", r) => Response(Templates(r).story())
