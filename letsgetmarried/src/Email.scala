@@ -4,7 +4,7 @@ import sttp.client4.quick.*
 import com.typesafe.config.Config
 
 object Email {
-  def sendEmails(subject: String, body: String)(using config: Config): Either[String, String] = {
+  def sendEmails(subject: String, body: String)(using config: Config): Unit = {
     val env = config.getString("env")
     val prefix = if (env == "prod") "" else s"$env - "
     val response = basicRequest
@@ -18,6 +18,6 @@ object Email {
       .post(uri"https://api.mailgun.net/v3/${config.getString("mailgun.domain")}/messages")
       .send()
 
-    response.body
+    response.body.left.foreach(Console.err.println)
   }
 }

@@ -23,8 +23,10 @@ class Endpoints {
               case None => Right(None)
               case _ => Left(Response.BadRequest())
             }).map {amount =>
-              if (item.purchase(purchasedBy, amount)) Response.Redirect("/registry")
-              else Response.InternalServerError("Could not mark item as purchased")
+              if (item.purchase(purchasedBy, amount)) {
+                Email.sendEmails(s"$purchasedBy bought something off the registry!", s"$purchasedBy just bought \"${item.name}\" (${item.id}).")
+                Response.Redirect("/registry")
+              } else Response.InternalServerError("Could not mark item as purchased")
             }.merge
           }
         case None => Response.NotFound()
@@ -48,11 +50,9 @@ class Endpoints {
             val people = invitation.people.filter(r.form.contains)
             val rsvp = RSVP(invitation.name, people, children, infants)
             if (rsvp.saveToDatabase()) {
-              Email.sendEmails(s"Received RSVP for $name", s"Received RSVP for $name.\n\nAdults: ${people.mkString(", ")}\nChildren: $children\nInfants: $infants").left.foreach(println)
+              Email.sendEmails(s"Received RSVP for $name", s"Received RSVP for $name.\n\nAdults: ${people.mkString(", ")}\nChildren: $children\nInfants: $infants")
               Response(Templates(r).rsvpSaved())
-            } else {
-              throw Exception("Could not save RSVP")
-            }
+            } else Response.InternalServerError("Could not save RSVP")
           case None =>
             Response.BadRequest()
         }
