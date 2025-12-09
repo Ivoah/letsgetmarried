@@ -166,7 +166,7 @@ class Templates(request: Request) {
         for (item <- Details.registry.sortBy(sortBy match {
           case "priceLowHigh" => (i: RegistryItem) => i.price.getOrElse(Double.PositiveInfinity)
           case "priceHighLow" => (i: RegistryItem) => -i.price.getOrElse(Double.PositiveInfinity)
-          case _ => (i: RegistryItem) => 0.0 //-(i.count - i.purchased()).toDouble
+          case _ => (i: RegistryItem) => if (i.purchased()) 1.0 else 0.0
         })) yield {
           frag(
             div(cls:="hoverGlow", onclick:=openDialog(item.id),
