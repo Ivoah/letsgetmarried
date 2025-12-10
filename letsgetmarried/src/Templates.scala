@@ -155,13 +155,14 @@ class Templates(request: Request) {
         legend("Please send all packages to:"),
         div(cls:="centered", Markdown.render(Details.registryAddress))
       ),
+      p("Once you have purchased a gift please mark it as given to ensure you get a timely thank you card! Cash or a check is also welcome for the fund items :)."),
       "Sort by: ", Seq(
-        ("None", "none"),
+        ("Available", ""),
         ("Price (low to high)", "priceLowHigh"),
         ("Price (high to low)", "priceHighLow"),
       ).flatMap {
         case (display, value) => Seq(a(href:=s"/registry?sortBy=$value#registry", display), frag(", "))
-      }.init,
+      }.init, // drop the trailing comma
       div(id:="registryItems",
         for (item <- Details.registry.sortBy(sortBy match {
           case "priceLowHigh" => (i: RegistryItem) => i.price.getOrElse(Double.PositiveInfinity)
@@ -182,20 +183,20 @@ class Templates(request: Request) {
             dialog(id:=s"${item.id}", div(
               input(`type`:="image", onclick:=closeDialog(item.id), src:="/static/close.svg"),
               div(
-                p(item.name),
+                p(item.name, item.price.map(p => f" - $$$p%.2f").getOrElse("")),
                 img(src:=item.image),
                 a(cls:="button", href:=item.link, target:="_blank", s"Purchase at ${URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")}"),
-                input(`type`:="submit", value:="Mark as purchased", onclick:=openDialog(s"${item.id}-purchase")),
+                input(`type`:="submit", value:="Mark as given", onclick:=openDialog(s"${item.id}-purchase")),
                 dialog(id:=s"${item.id}-purchase", div(
                   input(`type`:="image", onclick:=closeDialog(s"${item.id}-purchase"), src:="/static/close.svg"),
                   div(
                     fieldset(
-                      legend("Mark as purchased"),
+                      legend("Mark as given"),
                       form(method:="POST", action:=s"/registry/${item.id}",
                         label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
                         if (item.price.isEmpty) frag(label("Amount: ", input(`type`:="number", name:="amount", step:="0.01")), br()) else frag(),
                         s"This does not buy the item, it only tells the bride and groom you have purchased it. Please make sure you have entered the information correctly. This action cannot be undone.",
-                        input(`type`:="submit", value:="Mark as purchased")
+                        input(`type`:="submit", value:="Mark as given")
                       )
                     )
                   )
@@ -206,6 +207,10 @@ class Templates(request: Request) {
         }
       )
     )
+  )
+
+  def registrySaved(): String = page("Registry")(
+    p(cls:="centered", "Thank you! Your gift has been recorded.")
   )
 
   def rsvp(): String = page("RSVP")(

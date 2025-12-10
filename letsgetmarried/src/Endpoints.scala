@@ -22,10 +22,10 @@ class Endpoints {
               case Some(amount: String) if amount.toDoubleOption.nonEmpty => Right(Some(amount.toDouble))
               case None => Right(None)
               case _ => Left(Response.BadRequest())
-            }).map {amount =>
+            }).map { amount =>
               if (item.purchase(purchasedBy, amount)) {
                 Email.sendEmails(s"$purchasedBy bought something off the registry!", s"$purchasedBy just bought \"${item.name}\" (${item.id}).")
-                Response.Redirect("/registry")
+                Response(Templates(r).registrySaved())
               } else Response.InternalServerError("Could not mark item as purchased")
             }.merge
           }

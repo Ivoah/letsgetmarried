@@ -48,11 +48,11 @@ case class Story(title: String, image: String, body: String) derives YamlCodec
 case class PartyMember(name: String, role: String, image: String, bio: String) derives YamlCodec
 case class Photo(image: String, caption: Option[String]) derives YamlCodec
 case class RegistryItem(name: String, id: String, link: String, image: String, price: Option[Double]) derives YamlCodec {
-  def purchased(): Boolean = price.nonEmpty && sql"SELECT count(*) > 0 FROM registryPurchase WHERE id=$id".query(_.getBoolean(1)).headOption.getOrElse(false)
+  def purchased(): Boolean = price.nonEmpty && sql"SELECT count(*) > 0 FROM gift WHERE id=$id".query(_.getBoolean(1)).headOption.getOrElse(false)
 
   def purchase(purchasedBy: String, amount: Option[Double]): Boolean = {
     sql"""
-      INSERT INTO registryPurchase
+      INSERT INTO gift
       VALUES ($id, datetime('now', 'localtime'), $purchasedBy, ${amount.orNull})
     """.update() == 1
   }
