@@ -152,7 +152,7 @@ class Templates(request: Request) {
     if (Details.registry.isEmpty) p(textAlign.center, "Coming soon!")
     else frag(
       fieldset(
-        legend("Please send all packages to:"),
+        legend("Please send all gifts to:"),
         div(cls:="centered", Markdown.render(Details.registryAddress))
       ),
       p("Once you have purchased a gift please mark it as given to ensure you get a timely thank you card! Cash or a check is also welcome for the fund items :)."),
