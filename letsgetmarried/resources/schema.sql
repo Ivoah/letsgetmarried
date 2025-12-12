@@ -1,7 +1,7 @@
 drop table if exists rsvp;
-drop table if exists registryPurchase;
+drop table if exists gift;
 
-create table registryPurchase (
+create table gift (
     id             TEXT NOT NULL,
     purchasedAt    DATETIME NOT NULL,
     purchasedBy    TEXT NOT NULL,
