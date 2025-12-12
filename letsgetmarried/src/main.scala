@@ -18,12 +18,13 @@ def main(args: String*): Unit = {
   val conf = Conf(args)
   implicit val logger: String => Unit = if (conf.verbose()) println else (msg: String) => ()
   val endpoints = Endpoints()
-  val server = if (conf.socket.isDefined) {
-    println(s"Using unix socket: ${conf.socket()}")
-    Server(endpoints.router, socket = conf.socket.toOption)
-  } else {
-    println(s"Using host/port: ${conf.host()}:${conf.port()}")
-    Server(endpoints.router, conf.host(), conf.port())
+  val server = conf.socket.toOption match {
+    case Some(path) =>
+      println(s"Using unix socket: $path")
+      Server(endpoints.router, path)
+    case None =>
+      println(s"Using host/port: ${conf.host()}:${conf.port()}")
+      Server(endpoints.router, (conf.host(), conf.port()))
   }
   server.serve()
 }
