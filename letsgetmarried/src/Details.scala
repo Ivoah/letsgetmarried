@@ -36,8 +36,11 @@ private case class YamlDetails(
   groomsmen: Seq[PartyMember],
   photos: Seq[Photo],
   registryAddress: String,
+  registryNotes: String,
   registry: Seq[RegistryItem],
-  invitations: Seq[Invitation]
+  invitations: Seq[Invitation],
+  hotelNotes: String,
+  hotels: Seq[Hotel]
 ) derives YamlDecoder {
   require(registry.distinctBy(_.id).length == registry.length, "Duplicate id in registry list")
 }
@@ -89,6 +92,8 @@ case class RSVP(name: String, people: Seq[String], children: Int, infants: Int) 
     """.update() == 1
   }
 }
+
+case class Hotel(name: String, address: String, link: String) derives YamlCodec
 
 val Details = Source.fromResource("details.yaml").getLines().mkString("\n").as[YamlDetails] match {
   case Left(err) => throw err

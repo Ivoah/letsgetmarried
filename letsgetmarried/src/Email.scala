@@ -6,6 +6,7 @@ import com.typesafe.config.Config
 object Email {
   def sendEmails(subject: String, body: String)(using config: Config): Unit = {
     val env = config.getString("env")
+    if (env != "prod") return
     val prefix = if (env == "prod") "" else s"$env - "
     val response = basicRequest
       .auth.basic("api", config.getString("mailgun.apiKey"))

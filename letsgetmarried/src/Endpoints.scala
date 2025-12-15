@@ -57,6 +57,7 @@ class Endpoints {
             Response.BadRequest()
         }
       }
+    case ("GET", "/hotels", r) => Response(Templates(r).hotels())
     case ("POST", "/settings", r) =>
       Templates.settings.foldLeft(Response.Redirect(r.headers.get("Referer").map(_.head).getOrElse("/"))) { (response, setting) =>
         response.withCookie(r.form.get(setting) match {

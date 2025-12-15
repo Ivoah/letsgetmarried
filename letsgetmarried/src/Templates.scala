@@ -30,6 +30,8 @@ class Templates(request: Request) {
   private val weekday     = DateTimeFormatter.ofPattern("EEEE")
   private val timefmt     = DateTimeFormatter.ofPattern("h:mm a")
 
+  private val divider = div(cls:="divider", (0 until 3).map(_ => img(width:=16, src:="/static/diamond.svg")))
+
   private val dialog = tag("dialog")(attr("closedby"):="any")
   private def openDialog(id: String) = s"""document.getElementById("$id").showModal(); return false;"""
   private def closeDialog(id: String) = s"""document.getElementById("$id").close(); return false;"""
@@ -40,7 +42,8 @@ class Templates(request: Request) {
     "Wedding Party" -> "/party",
     "Photos" -> "/photos",
     "Registry" -> "/registry",
-    "RSVP" -> "/rsvp"
+    "RSVP" -> "/rsvp",
+    "Hotels" -> "/hotels"
   )
 
   private def _head(_title: String) = head(
@@ -70,6 +73,7 @@ class Templates(request: Request) {
   )
 
   private def _footer() = footer(
+    divider,
     h1(cls:="underline", s"${Details.groom.head}&${Details.bride.head}"),
     shortformat.format(Details.date),
     p("Created from scratch"),
@@ -155,7 +159,8 @@ class Templates(request: Request) {
         legend("Please send all gifts to:"),
         div(cls:="centered", Markdown.render(Details.registryAddress))
       ),
-      p("Once you have purchased a gift please mark it as given to ensure you get a timely thank you card! Cash or a check is also welcome for the fund items :)."),
+      p(Details.registryNotes),
+      divider,
       "Sort by: ", Seq(
         ("Available", ""),
         ("Price (low to high)", "priceLowHigh"),
@@ -195,6 +200,7 @@ class Templates(request: Request) {
                       form(method:="POST", action:=s"/registry/${item.id}",
                         label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
                         if (item.price.isEmpty) frag(label("Amount: ", input(`type`:="number", name:="amount", step:="0.01")), br()) else frag(),
+                        label("Notes: ", textarea(name:="notes")), br(),
                         s"This does not buy the item, it only tells the bride and groom you have purchased it. Please make sure you have entered the information correctly. This action cannot be undone.",
                         input(`type`:="submit", value:="Mark as given")
                       )
@@ -260,6 +266,14 @@ class Templates(request: Request) {
 
   def rsvpSaved(): String = page("RSVP")(
     p("Thank you! Your RSVP has been saved.")
+  )
+
+  def hotels(): String = page("Hotels")(
+    p(Details.hotelNotes),
+    divider,
+    Details.hotels.map { hotel =>
+      Markdown.render(s"${hotel.name}  \n[${hotel.address}](${hotel.link})")
+    }
   )
 
   def invitation(): String = doctype("html")(html(
