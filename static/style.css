@@ -114,7 +114,7 @@ header {
     }
   }
   > #tabbar {
-    margin: 15px 0 25px 0;
+    margin: 15px 0 35px 0;
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
