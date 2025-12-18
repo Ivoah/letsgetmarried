@@ -255,7 +255,7 @@ class Templates(request: Request) {
           )
           case _ => frag()
         },
-        input(`type`:="submit", value:="Save RSVP")
+        input(`type`:="submit", value:=s"${if (rsvp.nonEmpty) "Update" else "Save"} RSVP")
       )
     )
   )
