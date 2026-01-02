@@ -4,9 +4,6 @@ package controller
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ivoah.vial.*
 
-import model.sql
-import net.ivoah.letsgetmarried.model.given_Database
-
 import java.nio.file.Paths
 
 class Endpoints {
@@ -17,7 +14,9 @@ class Endpoints {
     case ("GET", "/story", r) => Response(view.Templates(r).story())
     case ("GET", "/party", r) => Response(view.Templates(r).party())
     case ("GET", "/photos", r) => Response(view.Templates(r).photos())
-    case ("GET", "/registry", r) => Response(view.Templates(r).registry(r.params.getOrElse("sortBy", "")))
+    case ("GET", "/registry", r) =>
+      val items = model.Details.registry.map(item => item -> model.Database.getRegistryItemPurchased(item))
+      Response(view.Templates(r).registry(items, r.params.getOrElse("sortBy", "")))
     case ("POST", s"/registry/$id", r) =>
       model.Details.registry.find(_.id == id) match {
         case Some(item) =>
@@ -27,7 +26,7 @@ class Endpoints {
               case None => Right(None)
               case _ => Left(Response.BadRequest())
             }).map { amount =>
-              if (item.purchase(purchasedBy, amount)) {
+              if (model.Database.markRegistryItemPurchased(item, purchasedBy, amount)) {
                 Email.sendEmails(s"$purchasedBy bought something off the registry!", s"$purchasedBy just bought \"${item.name}\" (${item.id}).")
                 Response(view.Templates(r).registrySaved())
               } else Response.InternalServerError("Could not mark item as purchased")
@@ -40,7 +39,7 @@ class Endpoints {
       r.params.get("name") match {
         case Some(name) =>
           model.Details.invitations.find(invite => (invite.name +: invite.people).exists(_.equalsIgnoreCase(name.strip().split("\\s+").mkString(" ")))) match {
-            case Some(invitation) => Response(view.Templates(r).rsvpFound(invitation, invitation.findRSVP()))
+            case Some(invitation) => Response(view.Templates(r).rsvpFound(invitation, model.Database.findRSVP(invitation.name)))
             case None => Response(view.Templates(r).rsvpNotFound(name))
           }
         case None => Response(view.Templates(r).rsvp())
@@ -54,7 +53,7 @@ class Endpoints {
           case Some(invitation) =>
             val people = invitation.people.filter(r.form.contains)
             val rsvp = model.RSVP(invitation.name, people, children, infants)
-            if (rsvp.saveToDatabase()) {
+            if (model.Database.saveRSVP(rsvp)) {
               Email.sendEmails(s"Received RSVP for $name", s"Received RSVP for $name.\n\nAdults: ${people.mkString(", ")}\nChildren: $children\nInfants: $infants")
               Response(view.Templates(r).rsvpSaved())
             } else Response.InternalServerError("Could not save RSVP")
@@ -72,14 +71,7 @@ class Endpoints {
       }
 
     case ("GET", "/admin", r) => Response(view.Templates(r).admin())
-    case ("GET", "/admin/rsvps", r) =>
-      val rsvps = sql"SELECT * FROM rsvp".query(r => model.RSVP(
-        r.getString("name"),
-        r.getString("people").split(",").filter(_.nonEmpty),
-        r.getInt("children"),
-        r.getInt("infants")
-      ))
-      Response(view.Templates(r).rsvps(rsvps))
+    case ("GET", "/admin/rsvps", r) => Response(view.Templates(r).rsvps(model.Database.allRSVPs()))
 
     case ("GET", "/invitation", r) => Response(view.Templates(r).invitation())
 //    case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))

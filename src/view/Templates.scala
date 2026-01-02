@@ -153,7 +153,7 @@ class Templates(request: Request) {
     ))
   )
 
-  def registry(sortBy: String): String = page("Registry")(
+  def registry(items: Seq[(model.RegistryItem, Boolean)], sortBy: String): String = page("Registry")(
     if (model.Details.registry.isEmpty) p(textAlign.center, "Coming soon!")
     else frag(
       fieldset(
@@ -170,21 +170,21 @@ class Templates(request: Request) {
         case (display, value) => Seq(a(href:=s"/registry?sortBy=$value#registry", display), frag(", "))
       }.init, // drop the trailing comma
       div(id:="registryItems",
-        for (item <- model.Details.registry.sortBy(sortBy match {
-          case "priceLowHigh" => (i: model.RegistryItem) => i.price.getOrElse(Double.PositiveInfinity)
-          case "priceHighLow" => (i: model.RegistryItem) => -i.price.getOrElse(Double.PositiveInfinity)
-          case _ => (i: model.RegistryItem) => if (i.purchased()) 1.0 else 0.0
+        for ((item, purchased) <- items.sortBy(sortBy match {
+          case "priceLowHigh" => _._1.price.getOrElse(Double.PositiveInfinity)
+          case "priceHighLow" => -_._1.price.getOrElse(Double.PositiveInfinity)
+          case _ => t => if (t._2) 1.0 else 0.0
         })) yield {
           frag(
             div(cls:="hoverGlow", onclick:=openDialog(item.id),
-              div(cls:=(if (item.purchased()) "disabled" else ""),
+              div(cls:=(if (purchased) "disabled" else ""),
                 img(src:=item.image),
                 div(cls:="details",
                   span(item.name),
                   span(item.price.map(p => f"$$$p%.2f").getOrElse("$∞"))
                 )
               ),
-              if (item.purchased()) img(src:="/static/purchased.svg", css("transform"):=s"rotate(${Random.between(-45.0, 45.0)}deg)") else frag()
+              if (purchased) img(src:="/static/purchased.svg", css("transform"):=s"rotate(${Random.between(-45.0, 45.0)}deg)") else frag()
             ),
             dialog(id:=s"${item.id}", div(
               input(`type`:="image", onclick:=closeDialog(item.id), src:="/static/close.svg"),

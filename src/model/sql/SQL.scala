@@ -1,9 +1,10 @@
 package net.ivoah.letsgetmarried
 package model
+package sql
 
-import scala.util.Using
 import java.sql.*
 import java.time.LocalDate
+import scala.util.Using
 
 type QueryParam = Int | Double | String | Boolean | LocalDate
 
