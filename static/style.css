@@ -327,3 +327,9 @@ footer {
     text-align: left;
   }
 }
+
+#rsvps {
+  table {
+    margin: auto;
+  }
+}

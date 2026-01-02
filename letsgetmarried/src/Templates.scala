@@ -276,6 +276,20 @@ class Templates(request: Request) {
     }
   )
 
+  def admin(): String = page("Admin")(
+    "Admin"
+  )
+
+  def rsvps(rsvps: Seq[RSVP]): String = page("RSVPs")(
+    table(
+      tr(th("Invitation"), th("# Coming")),
+      tr(td("Total"), td(rsvps.map(_.total).sum)),
+      for (rsvp <- rsvps) yield {
+        tr(td(if (rsvp.total == 0) s(rsvp.name) else rsvp.name), td(rsvp.total))
+      }
+    )
+  )
+
   def invitation(): String = doctype("html")(html(
     head(
       link(rel:="stylesheet", href:=s"/static/style.css"),

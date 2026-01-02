@@ -71,7 +71,7 @@ case class Invitation(name: String, people: Seq[String], children: InviteStatus)
   def findRSVP(): Option[RSVP] = {
     sql"SELECT * FROM rsvp WHERE name=$name".query(r => RSVP(
       r.getString("name"),
-      r.getString("people").split(","),
+      r.getString("people").split(",").filter(_.nonEmpty),
       r.getInt("children"),
       r.getInt("infants")
     )).headOption
@@ -79,6 +79,7 @@ case class Invitation(name: String, people: Seq[String], children: InviteStatus)
 }
 
 case class RSVP(name: String, people: Seq[String], children: Int, infants: Int) {
+  val total: Int = people.length + children + infants
   def saveToDatabase(): Boolean = {
     sql"""
       INSERT INTO rsvp

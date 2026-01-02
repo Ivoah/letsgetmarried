@@ -66,6 +66,16 @@ class Endpoints {
         })
       }
 
+    case ("GET", "/admin", r) => Response(Templates(r).admin())
+    case ("GET", "/admin/rsvps", r) =>
+      val rsvps = sql"SELECT * FROM rsvp".query(r => RSVP(
+        r.getString("name"),
+        r.getString("people").split(",").filter(_.nonEmpty),
+        r.getInt("children"),
+        r.getInt("infants")
+      ))
+      Response(Templates(r).rsvps(rsvps))
+
     case ("GET", "/invitation", r) => Response(Templates(r).invitation())
 //    case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
     case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file))
