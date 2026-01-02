@@ -163,7 +163,7 @@ class Templates(request: Request) {
       p(model.Details.registryNotes),
       divider,
       "Sort by: ", Seq(
-        ("Available", ""),
+        ("None", ""),
         ("Price (low to high)", "priceLowHigh"),
         ("Price (high to low)", "priceHighLow"),
       ).flatMap {
@@ -173,8 +173,8 @@ class Templates(request: Request) {
         for ((item, purchased) <- items.sortBy(sortBy match {
           case "priceLowHigh" => _._1.price.getOrElse(Double.PositiveInfinity)
           case "priceHighLow" => -_._1.price.getOrElse(Double.PositiveInfinity)
-          case _ => t => if (t._2) 1.0 else 0.0
-        })) yield {
+          case _ => t => 0.0
+        }).sortBy(_._2)) yield {
           frag(
             div(cls:="hoverGlow", onclick:=openDialog(item.id),
               div(cls:=(if (purchased) "disabled" else ""),
@@ -191,19 +191,27 @@ class Templates(request: Request) {
               div(
                 p(item.name, item.price.map(p => f" - $$$p%.2f").getOrElse("")),
                 img(src:=item.image),
-                a(cls:="button", href:=item.link, target:="_blank", s"Purchase at ${URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")}"),
-                input(`type`:="submit", value:="Mark as given", onclick:=openDialog(s"${item.id}-purchase")),
+                if (!purchased) a(cls:="button", href:=item.link, target:="_blank", s"Purchase at ${URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")}") else frag(),
+                input(`type`:="submit", value:=(if (purchased) "Unmark as given" else "Mark as given"), onclick:=openDialog(s"${item.id}-purchase")),
                 dialog(id:=s"${item.id}-purchase", div(
                   input(`type`:="image", onclick:=closeDialog(s"${item.id}-purchase"), src:="/static/close.svg"),
                   div(
                     fieldset(
-                      legend("Mark as given"),
-                      form(method:="POST", action:=s"/registry/${item.id}",
-                        label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
-                        if (item.price.isEmpty) frag(label("Amount: ", input(`type`:="number", name:="amount", step:="0.01")), br()) else frag(),
-                        label("Notes: ", textarea(name:="notes")), br(),
-                        s"This does not buy the item, it only tells the bride and groom you have purchased it. Please make sure you have entered the information correctly. This action cannot be undone.",
-                        input(`type`:="submit", value:="Mark as given")
+                      if (purchased) frag(
+                        legend("Unmark as given"),
+                        form(method:="POST", action:=s"/registry/delete/${item.id}",
+                          label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
+                          input(`type`:="submit", value:="Unmark as given")
+                        )
+                      ) else frag(
+                        legend("Mark as given"),
+                        form(method:="POST", action:=s"/registry/${item.id}",
+                          label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
+                          if (item.price.isEmpty) frag(label("Amount: ", input(`type`:="number", name:="amount", step:="0.01")), br()) else frag(),
+                          label("Notes: ", textarea(name:="notes")), br(),
+                          s"This does not buy the item, it only tells the bride and groom you have purchased it.",
+                          input(`type`:="submit", value:="Mark as given")
+                        )
                       )
                     )
                   )
@@ -218,6 +226,10 @@ class Templates(request: Request) {
 
   def registrySaved(): String = page("Registry")(
     p(cls:="centered", "Thank you! Your gift has been recorded.")
+  )
+
+  def registryDeleted(item: model.RegistryItem): String = page("Registry")(
+    p(cls:="centered", s"${item.name} is no longer marked as purchased.")
   )
 
   def rsvp(): String = page("RSVP")(

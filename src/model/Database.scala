@@ -21,11 +21,15 @@ object Database {
     """.update() == 1
   }
 
-  def getRegistryItemPurchased(item: RegistryItem): Boolean = item.price.nonEmpty && sql"SELECT count(*) > 0 FROM gift WHERE id=${item.id}".query(_.getBoolean(1)).headOption.getOrElse(false)
-  def markRegistryItemPurchased(item: RegistryItem, purchasedBy: String, amount: Option[Double]): Boolean = {
+  def getRegistryItemPurchase(item: RegistryItem): Option[String] = {
+    if (item.price.isEmpty) None
+    else sql"SELECT purchasedBy FROM gift WHERE id=${item.id}".query(_.getString(1)).headOption
+  }
+  def addRegistryItemPurchase(item: RegistryItem, purchasedBy: String, amount: Option[Double]): Boolean = {
     sql"""
       INSERT INTO gift
       VALUES (${item.id}, datetime('now', 'localtime'), $purchasedBy, ${amount.orNull})
     """.update() == 1
   }
+  def removeRegistryItemPurchase(item: RegistryItem): Boolean = sql"""DELETE FROM gift WHERE id=${item.id}""".update() == 1
 }

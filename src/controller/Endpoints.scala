@@ -15,8 +15,25 @@ class Endpoints {
     case ("GET", "/party", r) => Response(view.Templates(r).party())
     case ("GET", "/photos", r) => Response(view.Templates(r).photos())
     case ("GET", "/registry", r) =>
-      val items = model.Details.registry.map(item => item -> model.Database.getRegistryItemPurchased(item))
+      val items = model.Details.registry.map(item => item -> model.Database.getRegistryItemPurchase(item).nonEmpty)
       Response(view.Templates(r).registry(items, r.params.getOrElse("sortBy", "")))
+    // POST /registry/delete/$id is before POST /registry/$id so it matches first
+    case ("POST", s"/registry/delete/$id", r) =>
+      println(id)
+      model.Details.registry.find(_.id == id) match {
+        case Some(item) =>
+          r.form.expect("purchasedBy") { (purchasedBy: String) =>
+            if (model.Database.getRegistryItemPurchase(item).contains(purchasedBy)) {
+              if (model.Database.removeRegistryItemPurchase(item)) {
+                Email.sendEmails(s"$purchasedBy unmarked something as purchased on the registry", s"$purchasedBy no longer bought \"${item.name}\".")
+                Response(view.Templates(r).registryDeleted(item))
+              } else Response.InternalServerError("Could not unmark item as purchased")
+            } else {
+              Response.BadRequest("Could not unmark item as purchased. Make sure you entered the name exactly as when you marked the item as purchased.")
+            }
+          }
+        case None => Response.NotFound()
+      }
     case ("POST", s"/registry/$id", r) =>
       model.Details.registry.find(_.id == id) match {
         case Some(item) =>
@@ -26,15 +43,14 @@ class Endpoints {
               case None => Right(None)
               case _ => Left(Response.BadRequest())
             }).map { amount =>
-              if (model.Database.markRegistryItemPurchased(item, purchasedBy, amount)) {
-                Email.sendEmails(s"$purchasedBy bought something off the registry!", s"$purchasedBy just bought \"${item.name}\" (${item.id}).")
+              if (model.Database.addRegistryItemPurchase(item, purchasedBy, amount)) {
+                Email.sendEmails(s"$purchasedBy bought something off the registry!", s"$purchasedBy just bought \"${item.name}\".")
                 Response(view.Templates(r).registrySaved())
               } else Response.InternalServerError("Could not mark item as purchased")
             }.merge
           }
         case None => Response.NotFound()
       }
-    case ("DELETE", s"/registry/$id", r) => Response.InternalServerError("unimplemented")
     case ("GET", s"/rsvp", r) =>
       r.params.get("name") match {
         case Some(name) =>
