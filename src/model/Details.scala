@@ -1,4 +1,5 @@
 package net.ivoah.letsgetmarried
+package model
 
 import org.virtuslab.yaml.*
 

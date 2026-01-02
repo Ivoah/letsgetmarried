@@ -1,5 +1,6 @@
 package net.ivoah.letsgetmarried
 
+import controller.Endpoints
 import org.rogach.scallop.*
 import net.ivoah.vial.*
 

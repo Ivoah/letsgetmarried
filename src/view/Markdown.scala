@@ -1,4 +1,5 @@
 package net.ivoah.letsgetmarried
+package view
 
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.parser.Parser

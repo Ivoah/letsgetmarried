@@ -1,4 +1,5 @@
 package net.ivoah.letsgetmarried
+package model
 
 import scala.util.Using
 import java.sql.*

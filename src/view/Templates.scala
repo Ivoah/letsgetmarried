@@ -1,4 +1,5 @@
 package net.ivoah.letsgetmarried
+package view
 
 import scala.util.Random
 import java.time.LocalDate
@@ -47,7 +48,7 @@ class Templates(request: Request) {
   )
 
   private def _head(_title: String) = head(
-    title(s"${Details.groom.split(" ").head} & ${Details.bride.split(" ").head} - $_title"),
+    title(s"${model.Details.groom.split(" ").head} & ${model.Details.bride.split(" ").head} - $_title"),
     meta(name:="viewport", content:="width=device-width", attr("initial-scale"):="1.0"),
     script(src:="/static/konami.js"),
     if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
@@ -59,11 +60,11 @@ class Templates(request: Request) {
     p(cls:="suites",
       Seq("heart", "club", "diamond", "spade").map(suite => img(src:=s"/static/$suite.png"))
     ),
-    if (Details.underConstruction) h3("Website under construction - information subject to change") else frag(),
-    h1(s"${Details.groom.split(" ").head} & ${Details.bride.split(" ").head}"),
-    h3(s"${fullformat.format(Details.date)} • ${Details.location}"),
+    if (model.Details.underConstruction) h3("Website under construction - information subject to change") else frag(),
+    h1(s"${model.Details.groom.split(" ").head} & ${model.Details.bride.split(" ").head}"),
+    h3(s"${fullformat.format(model.Details.date)} • ${model.Details.location}"),
     h3({
-      val days = ChronoUnit.DAYS.between(LocalDate.now(), Details.date)
+      val days = ChronoUnit.DAYS.between(LocalDate.now(), model.Details.date)
       if (days > 0) s"$days days to go!"
       else "Today's the day! The sun is shining, the tank is clean!"
     }),
@@ -74,8 +75,8 @@ class Templates(request: Request) {
 
   private def _footer() = footer(
     divider,
-    h1(cls:="underline", s"${Details.groom.head}&${Details.bride.head}"),
-    shortformat.format(Details.date),
+    h1(cls:="underline", s"${model.Details.groom.head}&${model.Details.bride.head}"),
+    shortformat.format(model.Details.date),
     p("Created from scratch"),
     p("Getting married? ", a(href:="https://github.com/ivoah/letsgetmarried", "Create your wedding website for free."))
   )
@@ -104,10 +105,10 @@ class Templates(request: Request) {
   )).render
 
   def home(): String = page("Home")(
-   img(src:=Details.image),
-    h2(s"The wedding of ${Details.groom} & ${Details.bride}"),
-    h3(fullformat.format(Details.date)),
-    for (location <- Details.locations) yield div(cls:="location",
+   img(src:=model.Details.image),
+    h2(s"The wedding of ${model.Details.groom} & ${model.Details.bride}"),
+    h3(fullformat.format(model.Details.date)),
+    for (location <- model.Details.locations) yield div(cls:="location",
       h3(location.time),
       div(
         h3(location.name),
@@ -118,12 +119,12 @@ class Templates(request: Request) {
   )
 
   def story(): String = page("Our Story")(
-    h2(Details.story.title),
-    img(src:=Details.story.image),
-    div(cls:="markdown", Markdown.render(Details.story.body))
+    h2(model.Details.story.title),
+    img(src:=model.Details.story.image),
+    div(cls:="markdown", Markdown.render(model.Details.story.body))
   )
 
-  private def partyMember(member: PartyMember) = div(
+  private def partyMember(member: model.PartyMember) = div(
     div(
       h3(member.name, br(), member.role),
       img(src:=member.image),
@@ -132,14 +133,14 @@ class Templates(request: Request) {
   )
 
   def party(): String = page("Wedding Party")(
-    Details.bridesmaids.zip(Details.groomsmen).map { (bridesmaid, groomsman) => div(
+    model.Details.bridesmaids.zip(model.Details.groomsmen).map { (bridesmaid, groomsman) => div(
       partyMember(bridesmaid),
       partyMember(groomsman)
     )}
   )
 
   def photos(): String = page("Photos")(
-    Details.photos.map { p =>
+    model.Details.photos.map { p =>
       figure(css("transform"):=s"rotate(${Random.between(-15.0, 15.0)}deg)",
         img(src:=p.image),
         div(figcaption(p.caption.map(Markdown.render(_)).getOrElse(frag())), a(href:=p.image, download:="", img(src:="/static/download.svg")))
@@ -153,13 +154,13 @@ class Templates(request: Request) {
   )
 
   def registry(sortBy: String): String = page("Registry")(
-    if (Details.registry.isEmpty) p(textAlign.center, "Coming soon!")
+    if (model.Details.registry.isEmpty) p(textAlign.center, "Coming soon!")
     else frag(
       fieldset(
         legend("Please send all gifts to:"),
-        div(cls:="centered", Markdown.render(Details.registryAddress))
+        div(cls:="centered", Markdown.render(model.Details.registryAddress))
       ),
-      p(Details.registryNotes),
+      p(model.Details.registryNotes),
       divider,
       "Sort by: ", Seq(
         ("Available", ""),
@@ -169,10 +170,10 @@ class Templates(request: Request) {
         case (display, value) => Seq(a(href:=s"/registry?sortBy=$value#registry", display), frag(", "))
       }.init, // drop the trailing comma
       div(id:="registryItems",
-        for (item <- Details.registry.sortBy(sortBy match {
-          case "priceLowHigh" => (i: RegistryItem) => i.price.getOrElse(Double.PositiveInfinity)
-          case "priceHighLow" => (i: RegistryItem) => -i.price.getOrElse(Double.PositiveInfinity)
-          case _ => (i: RegistryItem) => if (i.purchased()) 1.0 else 0.0
+        for (item <- model.Details.registry.sortBy(sortBy match {
+          case "priceLowHigh" => (i: model.RegistryItem) => i.price.getOrElse(Double.PositiveInfinity)
+          case "priceHighLow" => (i: model.RegistryItem) => -i.price.getOrElse(Double.PositiveInfinity)
+          case _ => (i: model.RegistryItem) => if (i.purchased()) 1.0 else 0.0
         })) yield {
           frag(
             div(cls:="hoverGlow", onclick:=openDialog(item.id),
@@ -220,7 +221,7 @@ class Templates(request: Request) {
   )
 
   def rsvp(): String = page("RSVP")(
-    if (Details.invitations.isEmpty) {
+    if (model.Details.invitations.isEmpty) {
       p(textAlign.center, "Coming soon!")
     } else {
       form(action:="/rsvp", method:="GET",
@@ -234,14 +235,14 @@ class Templates(request: Request) {
     }
   )
 
-  def rsvpFound(invitation: Invitation, rsvp: Option[RSVP]): String = page("RSVP", Some(s"RSVP for ${invitation.name}"))(
+  def rsvpFound(invitation: model.Invitation, rsvp: Option[model.RSVP]): String = page("RSVP", Some(s"RSVP for ${invitation.name}"))(
     form(action:="/rsvp", method:="POST",
       fieldset(
         legend(s"RSVP for ${invitation.name}"),
         "Who will be attending?",
         invitation.children match {
-          case InviteStatus.Invited => " Please indicate how many children you are bringing and if they will need a seat at the table."
-          case InviteStatus.NotInvited => " Due to space limitations we are only able to accommodate those listed on the invitation."
+          case model.InviteStatus.Invited => " Please indicate how many children you are bringing and if they will need a seat at the table."
+          case model.InviteStatus.NotInvited => " Due to space limitations we are only able to accommodate those listed on the invitation."
           case _ => frag()
         }, br(),
         input(`type`:="hidden", name:="name", value:=invitation.name),
@@ -249,7 +250,7 @@ class Templates(request: Request) {
           label(input(`type`:="checkbox", name:=person, if (rsvp.exists(_.people.contains(person))) checked else frag()), s" $person"), br()
         ),
         invitation.children match {
-          case InviteStatus.Invited => frag(
+          case model.InviteStatus.Invited => frag(
             label("Children: ", input(`type`:="number", name:="children", min:=0, max:=9, value:=rsvp.map(_.children).getOrElse(0))), br(),
             label("Infants: ", input(`type`:="number", name:="infants", min:=0, max:=9, value:=rsvp.map(_.infants).getOrElse(0))),
           )
@@ -261,7 +262,7 @@ class Templates(request: Request) {
   )
 
   def rsvpNotFound(name: String): String = page("RSVP")(
-    p(s"Could not find an invitation for $name. Please make sure you entered your full first and last name as it appears on your invitation. Contact ", a(href:=s"mailto:${Details.contact}", Details.contact), " if you believe this is in error.")
+    p(s"Could not find an invitation for $name. Please make sure you entered your full first and last name as it appears on your invitation. Contact ", a(href:=s"mailto:${model.Details.contact}", model.Details.contact), " if you believe this is in error.")
   )
 
   def rsvpSaved(): String = page("RSVP")(
@@ -269,9 +270,9 @@ class Templates(request: Request) {
   )
 
   def hotels(): String = page("Hotels")(
-    p(Details.hotelNotes),
+    p(model.Details.hotelNotes),
     divider,
-    Details.hotels.map { hotel =>
+    model.Details.hotels.map { hotel =>
       Markdown.render(s"${hotel.name}  \n[${hotel.address}](${hotel.link})")
     }
   )
@@ -280,7 +281,7 @@ class Templates(request: Request) {
     "Admin"
   )
 
-  def rsvps(rsvps: Seq[RSVP]): String = page("RSVPs")(
+  def rsvps(rsvps: Seq[model.RSVP]): String = page("RSVPs")(
     table(
       tr(th("Invitation"), th("# Coming")),
       tr(td("Total"), td(rsvps.map(_.total).sum)),
@@ -309,27 +310,27 @@ class Templates(request: Request) {
               div(cls:="gridBorder side", css("grid-area"):="w", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
               div(id:="b4", cls:="border",
                 div(id:="tl", cls:="corner",
-                  h2(Details.bride.head.toString),
+                  h2(model.Details.bride.head.toString),
                   h1(cls:="heart", "♥")
                 ),
                 div(id:="br", cls:="corner",
-                  h2(Details.groom.head.toString),
+                  h2(model.Details.groom.head.toString),
                   h1(cls:="heart", "♥")
                 ),
                 div(cls:="center",
                   div(
-                    p(em(Details.invitationDetails.tagline)),
+                    p(em(model.Details.invitationDetails.tagline)),
                     div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),
-                    p(s"${Details.invitationDetails.parents} warmly invite you to the wedding of"),
+                    p(s"${model.Details.invitationDetails.parents} warmly invite you to the wedding of"),
                     p(
-                      h2(Details.bride),
+                      h2(model.Details.bride),
                       h2("&"),
-                      h2(Details.groom),
+                      h2(model.Details.groom),
                     ),
-                    p(id:="date", weekday.format(Details.date), span(shortformat.format(Details.date)), timefmt.format(Details.date)),
-                    Markdown.render(Details.invitationDetails.details),
+                    p(id:="date", weekday.format(model.Details.date), span(shortformat.format(model.Details.date)), timefmt.format(model.Details.date)),
+                    Markdown.render(model.Details.invitationDetails.details),
                     div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),
-                    p("Get details and RSVP at", br(), em(Details.invitationDetails.url), br(), s"Please RSVP by ${shortformat.format(Details.invitationDetails.deadline)}")
+                    p("Get details and RSVP at", br(), em(model.Details.invitationDetails.url), br(), s"Please RSVP by ${shortformat.format(model.Details.invitationDetails.deadline)}")
                   )
                 )
               )
@@ -339,9 +340,9 @@ class Templates(request: Request) {
       ),
       div(id:="back",
         div(
-          h2(Details.bride.split(raw"\s+").map(_.head).mkString),
+          h2(model.Details.bride.split(raw"\s+").map(_.head).mkString),
           h1("♥", lineHeight:=0.8),
-          h2(Details.groom.split(raw"\s+").map(_.head).mkString)
+          h2(model.Details.groom.split(raw"\s+").map(_.head).mkString)
         )
       )
     )
@@ -349,5 +350,5 @@ class Templates(request: Request) {
 }
 
 object Templates {
-  val settings = Seq("mazda", "scramble")
+  val settings: Seq[String] = Seq("mazda", "scramble")
 }

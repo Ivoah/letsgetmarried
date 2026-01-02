@@ -1,4 +1,5 @@
 package net.ivoah.letsgetmarried
+package controller
 
 import sttp.client4.quick.*
 import com.typesafe.config.Config
