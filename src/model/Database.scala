@@ -25,10 +25,10 @@ object Database {
     if (item.price.isEmpty) None
     else sql"SELECT purchasedBy FROM gift WHERE id=${item.id}".query(_.getString(1)).headOption
   }
-  def addRegistryItemPurchase(item: RegistryItem, purchasedBy: String, amount: Option[Double]): Boolean = {
+  def addRegistryItemPurchase(item: RegistryItem, purchasedBy: String, amount: Option[Double], notes: String): Boolean = {
     sql"""
       INSERT INTO gift
-      VALUES (${item.id}, datetime('now', 'localtime'), $purchasedBy, ${amount.orNull})
+      VALUES (${item.id}, datetime('now', 'localtime'), $purchasedBy, ${amount.orNull}, $notes)
     """.update() == 1
   }
   def removeRegistryItemPurchase(item: RegistryItem): Boolean = sql"""DELETE FROM gift WHERE id=${item.id}""".update() == 1

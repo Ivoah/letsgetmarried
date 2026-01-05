@@ -5,7 +5,8 @@ create table gift (
     id             TEXT NOT NULL,
     purchasedAt    DATETIME NOT NULL,
     purchasedBy    TEXT NOT NULL,
-    amount         REAL NULL
+    amount         REAL NULL,
+    notes          TEXT NOT NULL
 );
 
 create table rsvp (

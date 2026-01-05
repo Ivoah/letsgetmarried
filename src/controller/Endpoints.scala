@@ -37,14 +37,14 @@ class Endpoints {
     case ("POST", s"/registry/$id", r) =>
       model.Details.registry.find(_.id == id) match {
         case Some(item) =>
-          r.form.expect("purchasedBy") { (purchasedBy: String) =>
+          r.form.expect("purchasedBy", "notes") { (purchasedBy: String, notes: String) =>
             (r.form.get("amount") match {
               case Some(amount: String) if amount.toDoubleOption.nonEmpty => Right(Some(amount.toDouble))
               case None => Right(None)
               case _ => Left(Response.BadRequest())
             }).map { amount =>
-              if (model.Database.addRegistryItemPurchase(item, purchasedBy, amount)) {
-                Email.sendEmails(s"$purchasedBy bought something off the registry!", s"$purchasedBy just bought \"${item.name}\".")
+              if (model.Database.addRegistryItemPurchase(item, purchasedBy, amount, notes)) {
+                Email.sendEmails(s"$purchasedBy bought something off the registry!", s"$purchasedBy just bought \"${item.name}\".\n\n$notes")
                 Response(view.Templates(r).registrySaved())
               } else Response.InternalServerError("Could not mark item as purchased")
             }.merge

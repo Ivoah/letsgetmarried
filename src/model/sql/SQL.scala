@@ -33,7 +33,8 @@ case class Query(parts: Seq[String], params: Seq[QueryParam | RawQuery]) {
       Statement.RETURN_GENERATED_KEYS
     )
 
-    for ((param, i) <- params.collect { case p: QueryParam => p }.zipWithIndex) param match {
+    for ((param, i) <- params.collect { case p: QueryParam => p; case null => null }.zipWithIndex) param match {
+      case null            => stmt.setNull(i + 1, Types.NULL)
       case int: Int        => stmt.setInt(i + 1, int)
       case dbl: Double     => stmt.setDouble(i + 1, dbl)
       case str: String     => stmt.setString(i + 1, str)
