@@ -62,15 +62,21 @@ class Endpoints {
       }
     case ("POST", s"/rsvp", r) =>
       println(r.form)
-      r.form.expect("name") { (name: String) =>
+      r.form.expect("name", "regards") { (name: String, regards: String) =>
         val children = r.form.get("children").map(_.asInstanceOf[String].toInt).getOrElse(0)
         val infants = r.form.get("infants").map(_.asInstanceOf[String].toInt).getOrElse(0)
         model.Details.invitations.find(_.name == name) match {
           case Some(invitation) =>
             val people = invitation.people.filter(r.form.contains)
-            val rsvp = model.RSVP(invitation.name, people, children, infants)
+            val rsvp = model.RSVP(invitation.name, people, children, infants, regards)
             if (model.Database.saveRSVP(rsvp)) {
-              Email.sendEmails(s"Received RSVP for $name", s"Received RSVP for $name.\n\nAdults: ${people.mkString(", ")}\nChildren: $children\nInfants: $infants")
+              Email.sendEmails(s"Received RSVP for $name", s"""Received RSVP for $name.
+                                                              |
+                                                              |Adults: ${if (people.nonEmpty) people.mkString(", ") else "None :("}
+                                                              |Children: $children
+                                                              |Infants: $infants
+                                                              |
+                                                              |$regards""".stripMargin)
               Response(view.Templates(r).rsvpSaved())
             } else Response.InternalServerError("Could not save RSVP")
           case None =>

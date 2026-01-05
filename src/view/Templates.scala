@@ -208,7 +208,7 @@ class Templates(request: Request) {
                         form(method:="POST", action:=s"/registry/${item.id}",
                           label("Purchased by: ", input(`type`:="text", name:="purchasedBy")), br(),
                           if (item.price.isEmpty) frag(label("Amount: ", input(`type`:="number", name:="amount", step:="0.01")), br()) else frag(),
-                          label("Notes: ", textarea(name:="notes")), br(),
+                          label("Notes:", textarea(name:="notes")),
                           s"This does not buy the item, it only tells the bride and groom you have purchased it.",
                           input(`type`:="submit", value:="Mark as given")
                         )
@@ -268,6 +268,7 @@ class Templates(request: Request) {
           )
           case _ => frag()
         },
+        label("Regards:", textarea(name:="regards", rsvp.map(_.regards).getOrElse(""))),
         input(`type`:="submit", value:=s"${if (rsvp.nonEmpty) "Update" else "Save"} RSVP")
       )
     )

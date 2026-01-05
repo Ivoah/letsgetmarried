@@ -11,13 +11,14 @@ object Database {
   def saveRSVP(rsvp: RSVP): Boolean = {
     sql"""
       INSERT INTO rsvp
-      VALUES (${rsvp.name}, ${rsvp.people.mkString(",")}, ${rsvp.children}, ${rsvp.infants}, datetime('now', 'localtime'))
+      VALUES (${rsvp.name}, ${rsvp.people.mkString(",")}, ${rsvp.children}, ${rsvp.infants}, datetime('now', 'localtime'), ${rsvp.regards})
       ON CONFLICT(name)
       DO UPDATE SET
         people=${rsvp.people.mkString(",")},
         children=${rsvp.children},
         infants=${rsvp.infants},
-        updated=datetime('now', 'localtime')
+        updated=datetime('now', 'localtime'),
+        regards=${rsvp.regards}
     """.update() == 1
   }
 

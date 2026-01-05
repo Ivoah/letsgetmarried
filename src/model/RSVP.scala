@@ -3,7 +3,7 @@ package model
 
 import java.sql.ResultSet
 
-case class RSVP(name: String, people: Seq[String], children: Int, infants: Int) {
+case class RSVP(name: String, people: Seq[String], children: Int, infants: Int, regards: String) {
   val total: Int = people.length + children + infants
 }
 
@@ -12,6 +12,7 @@ object RSVP {
     r.getString("name"),
     r.getString("people").split(",").filter(_.nonEmpty),
     r.getInt("children"),
-    r.getInt("infants")
+    r.getInt("infants"),
+    r.getString("regards")
   )
 }

@@ -14,5 +14,6 @@ create table rsvp (
     people    TEXT NOT NULL,
     children  INTEGER NOT NULL,
     infants   INTEGER NOT NULL,
-    updated   DATETIME NOT NULL
+    updated   DATETIME NOT NULL,
+    regards   TEXT NOT NULL
 );
