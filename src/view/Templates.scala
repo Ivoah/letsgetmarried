@@ -264,7 +264,7 @@ class Templates(request: Request) {
         invitation.children match {
           case model.InviteStatus.Invited => frag(
             label("Children: ", input(`type`:="number", name:="children", min:=0, max:=9, value:=rsvp.map(_.children).getOrElse(0))), br(),
-            label("Infants: ", input(`type`:="number", name:="infants", min:=0, max:=9, value:=rsvp.map(_.infants).getOrElse(0))),
+            label("Infants: ", input(`type`:="number", name:="infants", min:=0, max:=9, value:=rsvp.map(_.infants).getOrElse(0))), br(),
           )
           case _ => frag()
         },
