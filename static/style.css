@@ -329,11 +329,16 @@ footer {
 }
 
 #rsvps {
-  .invite {
-    display: grid;
-    grid-template-columns: 85% auto;
-    gap: 2px;
+
+  details {
     margin: 2px 0;
+
+    summary {
+      display: grid;
+      grid-template-columns: 85% auto;
+      gap: 2px;
+      cursor: pointer;
+    }
   }
 
   .coming > * {
@@ -350,14 +355,5 @@ footer {
 
   .rsvpDetails {
     text-align: left;
-    display: none;
-  }
-
-  input[type=checkbox] {
-    display: none;
-  }
-
-  input[type=checkbox]:checked + .rsvpDetails {
-    display: initial;
   }
 }

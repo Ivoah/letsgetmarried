@@ -304,13 +304,11 @@ class Templates(request: Request) {
         case Some(_) => "coming"
         case None => "noResponse"
       }
-      val checkId = UUID.randomUUID().toString
-      frag(
-        label(cls:=s"invite $coming", `for`:=checkId,
+      tag("details")(
+        tag("summary")(cls:=coming,
           span(invite.name),
           span(rsvp.map(_.total).getOrElse(0))
         ),
-        input(`type`:="checkbox", id:=checkId),
         rsvp.map(_.details).getOrElse(frag())
       )
     }
