@@ -329,7 +329,35 @@ footer {
 }
 
 #rsvps {
-  table {
-    margin: auto;
+  .invite {
+    display: grid;
+    grid-template-columns: 85% auto;
+    gap: 2px;
+    margin: 2px 0;
+  }
+
+  .coming > * {
+    background-color: green;
+  }
+
+  .notComing > * {
+    background-color: red;
+  }
+
+  .noResponse > * {
+    background-color: yellow;
+  }
+
+  .rsvpDetails {
+    text-align: left;
+    display: none;
+  }
+
+  input[type=checkbox] {
+    display: none;
+  }
+
+  input[type=checkbox]:checked + .rsvpDetails {
+    display: initial;
   }
 }

@@ -10,6 +10,7 @@ import net.ivoah.vial.Request
 
 import java.net.URI
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 val words = raw"\w+".r
 extension (s: String) {
@@ -295,18 +296,24 @@ class Templates(request: Request) {
   )
 
   def rsvps(rsvps: Seq[model.RSVP]): String = page("RSVPs")(
-    table(
-      tr(th("Invitation"), th("# Coming")),
-      tr(td("Total"), td(rsvps.map(_.total).sum)),
-      for (invite <- model.Details.invitations) yield {
-        val rsvp = rsvps.find(_.name == invite.name)
-        tr(style:=s"background-color: ${rsvp match {
-          case Some(r) if r.total == 0 => "red"
-          case Some(_) => "green"
-          case None => "yellow"
-        }};", td(invite.name), td(rsvp.map(_.total).getOrElse(0)))
+    p(s"Total: ${rsvps.map(_.total).sum}"),
+    for (invite <- model.Details.invitations) yield {
+      val rsvp = rsvps.find(_.name == invite.name)
+      val coming = rsvp match {
+        case Some(r) if r.total == 0 => "notComing"
+        case Some(_) => "coming"
+        case None => "noResponse"
       }
-    )
+      val checkId = UUID.randomUUID().toString
+      frag(
+        label(cls:=s"invite $coming", `for`:=checkId,
+          span(invite.name),
+          span(rsvp.map(_.total).getOrElse(0))
+        ),
+        input(`type`:="checkbox", id:=checkId),
+        rsvp.map(_.details).getOrElse(frag())
+      )
+    }
   )
 
   def invitation(): String = doctype("html")(html(

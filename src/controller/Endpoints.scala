@@ -3,6 +3,7 @@ package controller
 
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ivoah.vial.*
+import scalatags.Text.all.stringFrag
 
 import java.nio.file.Paths
 
@@ -70,13 +71,7 @@ class Endpoints {
             val people = invitation.people.filter(r.form.contains)
             val rsvp = model.RSVP(invitation.name, people, children, infants, regards)
             if (model.Database.saveRSVP(rsvp)) {
-              Email.sendEmails(s"Received RSVP for $name", s"""Received RSVP for $name.
-                                                              |
-                                                              |Adults: ${if (people.nonEmpty) people.mkString(", ") else "None :("}
-                                                              |Children: $children
-                                                              |Infants: $infants
-                                                              |
-                                                              |$regards""".stripMargin)
+              Email.sendEmails(s"Received RSVP for $name", rsvp.details)
               Response(view.Templates(r).rsvpSaved())
             } else Response.InternalServerError("Could not save RSVP")
           case None =>
