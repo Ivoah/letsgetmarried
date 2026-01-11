@@ -298,8 +298,13 @@ class Templates(request: Request) {
     table(
       tr(th("Invitation"), th("# Coming")),
       tr(td("Total"), td(rsvps.map(_.total).sum)),
-      for (rsvp <- rsvps) yield {
-        tr(td(if (rsvp.total == 0) s(rsvp.name) else rsvp.name), td(rsvp.total))
+      for (invite <- model.Details.invitations) yield {
+        val rsvp = rsvps.find(_.name == invite.name)
+        tr(style:=s"background-color: ${rsvp match {
+          case Some(r) if r.total == 0 => "red"
+          case Some(_) => "green"
+          case None => "yellow"
+        }};", td(invite.name), td(rsvp.map(_.total).getOrElse(0)))
       }
     )
   )
