@@ -335,7 +335,7 @@ footer {
 
     summary {
       display: grid;
-      grid-template-columns: 85% auto;
+      grid-template-columns: 9fr 1fr;
       gap: 2px;
       cursor: pointer;
     }
