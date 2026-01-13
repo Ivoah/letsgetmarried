@@ -3,9 +3,11 @@ package controller
 
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ivoah.vial.*
-import scalatags.Text.all.stringFrag
+import scalatags.Text.all.*
 
 import java.nio.file.Paths
+import java.time.LocalDate
+import scala.util.Try
 
 class Endpoints {
   given Config = ConfigFactory.load()
@@ -45,7 +47,10 @@ class Endpoints {
               case _ => Left(Response.BadRequest())
             }).map { amount =>
               if (model.Database.addRegistryItemPurchase(item, purchasedBy, amount, notes)) {
-                Email.sendEmails(s"$purchasedBy bought something off the registry!", s"$purchasedBy just bought \"${item.name}\".\n\n$notes")
+                Email.sendEmails(
+                  s"$purchasedBy bought something off the registry!",
+                  html(body(p(s"$purchasedBy just bought \"${item.name}\"."), p(notes)))
+                )
                 Response(view.Templates(r).registrySaved())
               } else Response.InternalServerError("Could not mark item as purchased")
             }.merge
@@ -90,8 +95,9 @@ class Endpoints {
     case ("GET", "/admin", r) => Response(view.Templates(r).admin())
     case ("GET", "/admin/rsvps", r) => Response(view.Templates(r).rsvps(model.Database.allRSVPs()))
 
-    case ("GET", "/invitation", r) => Response(view.Templates(r).invitation())
-//    case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
+    case ("GET", "/invitation", r) =>
+      Response(view.Templates(r).invitation(r.params.get("rsvpBy").flatMap(d => Try(LocalDate.parse(d)).toOption)))
+    // case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
     case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file))
     case ("GET", s"/photos/$file", _) => Response.forFile(Paths.get("photos"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
   }
