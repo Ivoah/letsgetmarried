@@ -49,7 +49,7 @@ class Endpoints {
               if (model.Database.addRegistryItemPurchase(item, purchasedBy, amount, notes)) {
                 Email.sendEmails(
                   s"$purchasedBy bought something off the registry!",
-                  html(body(p(s"$purchasedBy just bought \"${item.name}\"."), p(notes)))
+                  html(body(p(s"$purchasedBy just bought \"${item.name}\"${amount.map(m => s" ($$$m)").getOrElse("")}."), p(notes)))
                 )
                 Response(view.Templates(r).registrySaved())
               } else Response.InternalServerError("Could not mark item as purchased")
