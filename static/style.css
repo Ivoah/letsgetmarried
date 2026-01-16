@@ -68,6 +68,10 @@ img {
   object-fit: cover;
 }
 
+ul {
+  text-align: left;
+}
+
 dialog {
   position: fixed;
   max-width: 750px;
@@ -355,5 +359,23 @@ footer {
 
   .rsvpDetails {
     text-align: left;
+  }
+}
+
+#gifts {
+
+  details {
+    margin: 2px 0;
+
+    summary {
+      display: grid;
+      grid-template-columns: 9fr 1fr;
+      gap: 2px;
+      cursor: pointer;
+    }
+  }
+
+  summary > * {
+    background-color: green;
   }
 }

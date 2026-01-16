@@ -6,7 +6,7 @@ import sql.*
 object Database {
   given Database = model.sql.Database("jdbc:sqlite:database.db")
 
-  def allRSVPs(): Seq[RSVP] = sql"SELECT * FROM rsvp".query(RSVP.fromResultSet)
+  def getAllRSVPs(): Seq[RSVP] = sql"SELECT * FROM rsvp".query(RSVP.fromResultSet)
   def findRSVP(name: String): Option[RSVP] = sql"SELECT * FROM rsvp WHERE name=$name".query(RSVP.fromResultSet).headOption
   def saveRSVP(rsvp: RSVP): Boolean = {
     sql"""
@@ -22,6 +22,7 @@ object Database {
     """.update() == 1
   }
 
+  def getAllGifts(): Seq[Gift] = sql"SELECT * FROM gift".query(Gift.fromResultSet)
   def getRegistryItemPurchase(item: RegistryItem): Option[String] = {
     if (item.price.isEmpty) None
     else sql"SELECT purchasedBy FROM gift WHERE id=${item.id}".query(_.getString(1)).headOption

@@ -292,7 +292,10 @@ class Templates(request: Request) {
   )
 
   def admin(): String = page("Admin")(
-    "Admin"
+    ul(
+      li(a(href:="/admin/rsvps", "RSVPs")),
+      li(a(href:="/admin/gifts", "Gifts"))
+    )
   )
 
   def rsvps(rsvps: Seq[model.RSVP]): String = page("RSVPs")(
@@ -310,6 +313,22 @@ class Templates(request: Request) {
           span(rsvp.map(_.total).getOrElse(0))
         ),
         rsvp.map(_.details).getOrElse(frag())
+      )
+    }
+  )
+  
+  def gifts(allGifts: Seq[model.Gift]): String = page("Gifts")(
+    p(s"Total: ${allGifts.length}"),
+    for ((giver, gifts) <- allGifts.groupBy(_.purchasedBy).toSeq) yield {
+      tag("details")(
+        tag("summary")(
+          span(giver),
+          span(s"${gifts.length}")
+        ),
+        ul(gifts.map(gift => frag(
+          li(attr("title"):=gift.id, s"${model.Details.registry.find(_.id == gift.id).get.name}", gift.amount.map(g => s": $$$g").getOrElse("")),
+          if (gift.notes.nonEmpty) p(gift.notes) else frag()
+        )))
       )
     }
   )

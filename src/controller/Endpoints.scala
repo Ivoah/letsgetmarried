@@ -93,7 +93,8 @@ class Endpoints {
       }
 
     case ("GET", "/admin", r) => Response(view.Templates(r).admin())
-    case ("GET", "/admin/rsvps", r) => Response(view.Templates(r).rsvps(model.Database.allRSVPs()))
+    case ("GET", "/admin/rsvps", r) => Response(view.Templates(r).rsvps(model.Database.getAllRSVPs()))
+    case ("GET", "/admin/gifts", r) => Response(view.Templates(r).gifts(model.Database.getAllGifts()))
 
     case ("GET", "/invitation", r) =>
       Response(view.Templates(r).invitation(r.params.get("rsvpBy").flatMap(d => Try(LocalDate.parse(d)).toOption)))
