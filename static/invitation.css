@@ -7,6 +7,10 @@ body {
   max-width: none;
 }
 
+a {
+  text-decoration: none;
+}
+
 #front, #back {
   width: 5in;
   height: 7in;

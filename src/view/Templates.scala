@@ -374,7 +374,7 @@ class Templates(request: Request) {
                     div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),
                     p(
                       "Get details and RSVP at", br(),
-                      em(model.Details.invitationDetails.url), br(),
+                      a(href:=model.Details.invitationDetails.url, em(model.Details.invitationDetails.url)), br(),
                       s"Please RSVP by ${shortformat.format(model.Details.invitationDetails.deadline)}"
                     )
                   )
