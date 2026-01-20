@@ -333,7 +333,7 @@ class Templates(request: Request) {
     }
   )
 
-  def invitation(rsvpBy: Option[LocalDate]): String = doctype("html")(html(
+  def invitation(): String = doctype("html")(html(
     head(
       link(rel:="stylesheet", href:=s"/static/style.css"),
       if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
@@ -375,7 +375,7 @@ class Templates(request: Request) {
                     p(
                       "Get details and RSVP at", br(),
                       em(model.Details.invitationDetails.url), br(),
-                      rsvpBy.map(date => s"Please RSVP by ${shortformat.format(date)}")
+                      s"Please RSVP by ${shortformat.format(model.Details.invitationDetails.deadline)}"
                     )
                   )
                 )

@@ -96,8 +96,7 @@ class Endpoints {
     case ("GET", "/admin/rsvps", r) => Response(view.Templates(r).rsvps(model.Database.getAllRSVPs()))
     case ("GET", "/admin/gifts", r) => Response(view.Templates(r).gifts(model.Database.getAllGifts()))
 
-    case ("GET", "/invitation", r) =>
-      Response(view.Templates(r).invitation(r.params.get("rsvpBy").flatMap(d => Try(LocalDate.parse(d)).toOption)))
+    case ("GET", "/invitation", r) => Response(view.Templates(r).invitation())
     // case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
     case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file))
     case ("GET", s"/photos/$file", _) => Response.forFile(Paths.get("photos"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
