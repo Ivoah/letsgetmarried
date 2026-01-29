@@ -66,8 +66,8 @@ class Templates(request: Request) {
     h3(s"${fullformat.format(model.Details.date)} • ${model.Details.location}"),
     h3({
       val days = ChronoUnit.DAYS.between(LocalDate.now(), model.Details.date)
-      if (days > 0) s"$days days to go!"
-      else "Today's the day! The sun is shining, the tank is clean!"
+      if (days == 0) "Today's the day! The sun is shining, the tank is clean!"
+      else s"$days days to go!"
     }),
     div(id:="tabbar", for ((name, address) <- tabs) yield {
       a(cls:=(if (name == currentPage) "tab underline" else "tab"), href:=address, name)
@@ -106,7 +106,7 @@ class Templates(request: Request) {
   )).render
 
   def home(): String = page("Home")(
-   img(src:=model.Details.image),
+    img(src:=model.Details.image),
     h2(s"The wedding of ${model.Details.groom} & ${model.Details.bride}"),
     h3(fullformat.format(model.Details.date)),
     for (location <- model.Details.locations) yield div(cls:="location",
@@ -161,7 +161,7 @@ class Templates(request: Request) {
         legend("Please send all gifts to:"),
         div(cls:="centered", Markdown.render(model.Details.registryAddress))
       ),
-      p(model.Details.registryNotes),
+      Markdown.render(model.Details.registryNotes),
       divider,
       "Sort by: ", Seq(
         ("None", ""),
