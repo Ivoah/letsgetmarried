@@ -53,6 +53,7 @@ class Templates(request: Request) {
     meta(name:="viewport", content:="width=device-width", attr("initial-scale"):="1.0"),
     script(src:="/static/konami.js"),
     if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
+    if (request.cookies.exists(_.name == "neko")) script(src:="/static/neko.js") else frag(),
     link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
     link(rel:="stylesheet", href:=s"/static/style.css"),
   )
@@ -91,7 +92,7 @@ class Templates(request: Request) {
             legend("Super secret settings"),
             table(
               for (setting <- Templates.settings) yield tr(
-                td(input(`type`:="checkbox", `id`:=setting, attr("name"):=setting, if (request.cookies.exists(_.name == setting)) checked else frag())),
+                td(input(`type`:="checkbox", attr("name"):=setting, if (request.cookies.exists(_.name == setting)) checked else frag())),
                 td(label(`for`:=setting, setting.capitalize))
               )
             ),
@@ -396,5 +397,5 @@ class Templates(request: Request) {
 }
 
 object Templates {
-  val settings: Seq[String] = Seq("mazda", "scramble")
+  val settings: Seq[String] = Seq("mazda", "scramble", "neko")
 }

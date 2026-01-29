@@ -9,3 +9,4 @@ originals/
 application.conf
 details.yaml
 database.db
+static/neko.js
