@@ -26,7 +26,7 @@
   font-weight: 700;
 }
 
-body {
+body, input[type=search], textarea, input[type=submit], .button {
   font-family: "Mazda Type", sans-serif !important;
   line-height: 1.5 !important;
 }
