@@ -1,6 +1,18 @@
 import org.scalajs.dom.*
 import scala.scalajs.js.timers
 
+extension [T](t: (T, T))(using n: Numeric[T]) {
+  def +(other: (T, T)): (T, T) = {
+    import n.*
+    (t._1 + other._1, t._2 + other._2)
+  }
+
+  def -(other: (T, T)): (T, T) = {
+    import n.*
+    (t._1 - other._1, t._2 - other._2)
+  }
+}
+
 case class Neko(var position: (x: Int, y: Int) = (-32, -32), var target: (x: Int, y: Int) = (-32, -32), var frame: Int = 0) {
   private val speed = 15
   private val offsets: Seq[String] = Seq(
@@ -45,11 +57,7 @@ case class Neko(var position: (x: Int, y: Int) = (-32, -32), var target: (x: Int
     }
     frame = (frame + 1) % 2
 
-    position = (
-      position.x + dx,
-      position.y + dy
-    )
-
+    position = position + (dx, dy)
     img.style.left = s"${position.x - 16}px"
     img.style.top = s"${position.y - 16}px"
   }
@@ -63,6 +71,13 @@ def main(): Unit = {
     document.addEventListener("mousemove", (e: MouseEvent) => {
       neko.target = (e.pageX.toInt, e.pageY.toInt)
       if (neko.position == (-32, -32)) neko.position = neko.target
+    })
+
+    var lastScroll = (0, 0)
+    document.addEventListener("scroll", (e: UIEvent) => {
+      val scroll = (e.view.scrollX.toInt, e.view.scrollY.toInt)
+      neko.target = neko.target + (scroll - lastScroll)
+      lastScroll = scroll
     })
     neko.tick()
   })

@@ -93,7 +93,7 @@ class Templates(request: Request) {
             legend("Super secret settings"),
             table(
               for (setting <- Templates.settings) yield tr(
-                td(input(`type`:="checkbox", attr("name"):=setting, if (request.cookies.exists(_.name == setting)) checked else frag())),
+                td(input(id:=setting, `type`:="checkbox", attr("name"):=setting, if (request.cookies.exists(_.name == setting)) checked else frag())),
                 td(label(`for`:=setting, setting.capitalize))
               )
             ),
