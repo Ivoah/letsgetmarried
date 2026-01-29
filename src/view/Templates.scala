@@ -80,7 +80,8 @@ class Templates(request: Request) {
     h1(cls:="underline", s"${model.Details.groom.head}&${model.Details.bride.head}"),
     shortformat.format(model.Details.date),
     p("Created from scratch"),
-    p("Getting married? ", a(href:="https://github.com/ivoah/letsgetmarried", "Create your wedding website for free."))
+    p("Getting married? ", a(href:="https://github.com/ivoah/letsgetmarried", "Create your wedding website for free.")),
+    p("up-up-down-down-left-right-left-right-b-a")
   )
 
   private def page(name: String, _title: Option[String] = None)(content: Frag*) = doctype("html")(html(
