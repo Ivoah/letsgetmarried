@@ -13,7 +13,15 @@ extension [T](t: (T, T))(using n: Numeric[T]) {
   }
 }
 
-case class Neko(var position: (x: Int, y: Int) = (-32, -32), var target: (x: Int, y: Int) = (-32, -32), var frame: Int = 0) {
+case class Neko() {
+  var position: (x: Int, y: Int) = Option(window.sessionStorage.getItem("neko.position"))
+    .map { case s"($x,$y)" => (x.toInt, y.toInt)}
+    .getOrElse(-32, -32)
+  var target: (x: Int, y: Int) = Option(window.sessionStorage.getItem("neko.target"))
+    .map { case s"($x,$y)" => (x.toInt, y.toInt)}
+    .getOrElse(-32, -32)
+  private var frame = 0
+
   private val speed = 15
   private val offsets: Seq[String] = Seq(
     "alert", "sleeping", "tail", "yawn",
@@ -60,6 +68,8 @@ case class Neko(var position: (x: Int, y: Int) = (-32, -32), var target: (x: Int
     position = position + (dx, dy)
     img.style.left = s"${position.x - 16}px"
     img.style.top = s"${position.y - 16}px"
+    window.sessionStorage.setItem("neko.position", position.toString)
+    window.sessionStorage.setItem("neko.target", target.toString)
   }
 }
 
