@@ -301,7 +301,7 @@ class Templates(request: Request) {
   )
 
   def rsvps(rsvps: Seq[model.RSVP]): String = page("RSVPs")(
-    p(s"Total: ${rsvps.map(_.total).sum}"),
+    p(s"Totals: ${rsvps.filter(_.total > 0).length} affirmative invites, ${rsvps.map(_.total).sum} people"),
     for (invite <- model.Details.invitations) yield {
       val rsvp = rsvps.find(_.name == invite.name)
       val coming = rsvp match {
