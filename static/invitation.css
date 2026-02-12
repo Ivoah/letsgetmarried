@@ -22,6 +22,9 @@ a {
     width: 100%;
     height: 100%;
     /*padding: 5px;*/
+    img {
+      width: 16px;
+    }
   }
 
   #b1 {
@@ -102,11 +105,6 @@ a {
     transform: rotate(180deg);
   }
 
-  img {
-    display: inline;
-    width: 16px;
-  }
-
   #date {
     display: flex;
     justify-content: space-evenly;
@@ -119,7 +117,7 @@ a {
 }
 
 #back {
-  background-image: url('/static/back.png');
+  background-image: url('/static/invitation_back.png');
   background-size: 100% 100%;
   display: flex;
   justify-content: center;

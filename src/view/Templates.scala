@@ -32,7 +32,7 @@ class Templates(request: Request) {
   private val weekday     = DateTimeFormatter.ofPattern("EEEE")
   private val timefmt     = DateTimeFormatter.ofPattern("h:mm a")
 
-  private val divider = div(cls:="divider", (0 until 3).map(_ => img(width:=16, src:="/static/diamond.svg")))
+  private val divider = div(cls:="divider", (0 until 3).map(_ => img(src:="/static/diamond.svg")))
 
   private val dialog = tag("dialog")(attr("closedby"):="any")
   private def openDialog(id: String) = s"""document.getElementById("$id").showModal(); return false;"""
@@ -370,7 +370,7 @@ class Templates(request: Request) {
                 div(cls:="center",
                   div(
                     p(em(model.Details.invitationDetails.tagline)),
-                    div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),
+                    divider,
                     p(s"${model.Details.invitationDetails.parents} warmly invite you to the wedding of"),
                     p(
                       h2(model.Details.bride),
@@ -379,7 +379,7 @@ class Templates(request: Request) {
                     ),
                     p(id:="date", weekday.format(model.Details.date), span(shortformat.format(model.Details.date)), timefmt.format(model.Details.date)),
                     Markdown.render(model.Details.invitationDetails.details),
-                    div((0 until 3).map(_ => img(src:="/static/diamond.svg"))),
+                    divider,
                     p(
                       "Get details and RSVP at", br(),
                       a(href:=model.Details.invitationDetails.url, em(model.Details.invitationDetails.url)), br(),
@@ -401,6 +401,79 @@ class Templates(request: Request) {
       )
     )
   )).render
+
+  def program(): String = {
+    def people(title: String, names: Seq[String]) = div(
+      strong(title), br(),
+      names.map(n => frag(n, br()))
+    )
+
+    def schedule(schedule: Seq[Seq[String]]) = div(cls:="schedule",
+      schedule.map {
+        case Seq(p) => div(span(p))
+        case Seq(p1, p2) => div(span(p1), span(cls:="antline"), span(p2))
+      }
+    )
+
+    doctype("html")(html(
+      head(
+        link(rel:="stylesheet", href:=s"/static/style.css"),
+        if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
+        link(rel:="stylesheet", href:=s"/static/program.css"),
+        link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
+        title("Program")
+      ),
+      body(
+        div(id:="front",
+          div(id:="b1", cls:="border",
+            div(id:="b2", cls:="border",
+              div(id:="b3", cls:="border",
+                div(cls:="gridBorder", css("grid-area"):="n", (0 until 25).map(_ => img(src:="static/diamond.svg"))),
+                div(cls:="gridBorder", css("grid-area"):="s", (0 until 25).map(_ => img(src:="static/diamond.svg"))),
+                div(cls:="gridBorder side", css("grid-area"):="e", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
+                div(cls:="gridBorder side", css("grid-area"):="w", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
+                div(id:="b4", cls:="border",
+                  div(cls:="title", s"The Wedding Ceremony of", br(), s"${model.Details.groom} & ${model.Details.bride}"),
+                  s"${fullformat.format(model.Details.date)} - ${model.Details.locations.find(_.name == "Ceremony").get.address.split("\n").head}",
+                  schedule(model.Details.programDetails.ceremony),
+                  div(cls:="people",
+                    div(
+                      people("Matron of Honor", Seq(model.Details.bridesmaids.head.name)),
+                      people("Bridesmaids", model.Details.bridesmaids/*.tail*/.map(_.name))
+                    ),
+                    div(
+                      people("Best Man", Seq(model.Details.groomsmen.head.name)),
+                      people("Groomsmen", model.Details.groomsmen/*.tail*/.map(_.name))
+                    ),
+                  ),
+                  div(cls:="people",
+                    people("Pastors", model.Details.programDetails.pastors),
+                    people("Pianist", Seq(model.Details.programDetails.pianist)),
+                    people("Ushers", model.Details.programDetails.ushers),
+                  ),
+                  div(cls:="people",
+                    people("Flower Girl", Seq(model.Details.programDetails.flowerGirl)),
+                    people("Ring Bearer", Seq(model.Details.programDetails.ringBearer))
+                  )
+                )
+              )
+            )
+          )
+        ),
+        div(id:="back",
+          div(
+            "Reception",
+            Markdown.render(model.Details.locations.find(_.name == "Reception").get.address),
+            schedule(model.Details.programDetails.reception)
+          ),
+          div(
+            "Special Thanks",
+            Markdown.render(model.Details.programDetails.thanks)
+          )
+        )
+      )
+    )).render
+  }
 }
 
 object Templates {
