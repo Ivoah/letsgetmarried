@@ -157,6 +157,7 @@ footer {
 }
 
 .divider {
+  text-align: center;
   img {
     display: inline;
     width: 16px;
