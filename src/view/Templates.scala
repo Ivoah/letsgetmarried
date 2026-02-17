@@ -107,6 +107,8 @@ class Templates(request: Request) {
     )
   )).render
 
+  def message(tab: String, msg: String): String = page(tab)(div(cls:="centered", Markdown.render(msg)))
+
   def home(): String = page("Home")(
     img(src:=model.Details.image),
     h2(s"The wedding of ${model.Details.groom} & ${model.Details.bride}"),
@@ -127,20 +129,23 @@ class Templates(request: Request) {
     div(cls:="markdown", Markdown.render(model.Details.story.body))
   )
 
-  private def partyMember(member: model.PartyMember) = div(
-    div(
-      h3(member.name, br(), member.role),
-      img(src:=member.image),
-      Markdown.render(member.bio)
-    )
-  )
 
-  def party(): String = page("Wedding Party")(
-    model.Details.bridesmaids.zip(model.Details.groomsmen).map { (bridesmaid, groomsman) => div(
-      partyMember(bridesmaid),
-      partyMember(groomsman)
-    )}
-  )
+  def party(): String = {
+    def partyMember(member: model.PartyMember) = div(
+      div(
+        h3(member.name, br(), member.role),
+        img(src:=member.image),
+        Markdown.render(member.bio)
+      )
+    )
+
+    page("Wedding Party")(
+      model.Details.bridesmaids.zip(model.Details.groomsmen).map { (bridesmaid, groomsman) => div(
+        partyMember(bridesmaid),
+        partyMember(groomsman)
+      )}
+    )
+  }
 
   def photos(): String = page("Photos")(
     model.Details.photos.map { p =>
@@ -227,14 +232,6 @@ class Templates(request: Request) {
     )
   )
 
-  def registrySaved(): String = page("Registry")(
-    p(cls:="centered", "Thank you! Your gift has been recorded.")
-  )
-
-  def registryDeleted(item: model.RegistryItem): String = page("Registry")(
-    p(cls:="centered", s"${item.name} is no longer marked as purchased.")
-  )
-
   def rsvp(): String = page("RSVP")(
     if (model.Details.invitations.isEmpty) {
       p(textAlign.center, "Coming soon!")
@@ -275,14 +272,6 @@ class Templates(request: Request) {
         input(`type`:="submit", value:=s"${if (rsvp.nonEmpty) "Update" else "Save"} RSVP")
       )
     )
-  )
-
-  def rsvpNotFound(name: String): String = page("RSVP")(
-    p(s"Could not find an invitation for $name. Please make sure you entered your full first and last name as it appears on your invitation. Contact ", a(href:=s"mailto:${model.Details.contact}", model.Details.contact), " if you believe this is in error.")
-  )
-
-  def rsvpSaved(): String = page("RSVP")(
-    p("Thank you! Your RSVP has been saved.")
   )
 
   def hotels(): String = page("Hotels")(
