@@ -291,7 +291,10 @@ class Templates(request: Request) {
 
   def rsvps(rsvps: Seq[model.RSVP]): String = page("RSVPs")(
     p(
-      s"Accepted: ${rsvps.map(_.total).sum} (${rsvps.count(_.total > 0)})", br(),
+      s"Adults: ${rsvps.map(_.people.length).sum}", br(),
+      s"Children: ${rsvps.map(_.children).sum}", br(),
+      s"Infants: ${rsvps.map(_.infants).sum}", br(),
+      s"Total: ${rsvps.map(_.total).sum} (${rsvps.count(_.total > 0)})", br(),
       s"Outstanding: ${
         val outstanding = model.Details.invitations.filter(i => !rsvps.exists(r => r.name == i.name))
         s"${outstanding.map(_.people.length).sum}${if (outstanding.exists(_.children == model.InviteStatus.Invited)) "+" else ""} (${outstanding.length})"
