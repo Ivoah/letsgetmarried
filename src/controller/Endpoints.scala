@@ -99,7 +99,7 @@ class Endpoints {
 
     case ("GET", "/invitation", r) => Response(view.Templates(r).invitation())
     case ("GET", "/program", r) => Response(view.Templates(r).program())
-
+    case ("GET", "/seating", r) => Response(view.Templates(r).seating())
     // case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
     case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file))
     case ("GET", s"/photos/$file", _) => Response.forFile(Paths.get("photos"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))

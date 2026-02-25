@@ -66,3 +66,12 @@ val Details = Source.fromResource("details.yaml").getLines().mkString("\n").as[Y
   case Left(err) => throw err
   case Right(details) => details
 }
+
+val Seating = Source.fromResource("seating.yaml").getLines().mkString("\n").as[Map[String, Seq[String]]] match {
+  case Left(err) => throw err
+  case Right(seating) =>
+    val s = seating.toSeq
+      .flatMap { case (k, vv) => vv.map(v => v -> k) }
+      .sortBy(_._1.split("\\s+").last)
+    s ++ Seq.fill(30 - s.length % 30)("" -> "")
+}
