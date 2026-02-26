@@ -5,6 +5,7 @@ import org.virtuslab.yaml.*
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.io.Source
+import scala.math.Ordering.Implicits.seqOrdering
 
 private given YamlDecoder[LocalDate] = YamlDecoder[LocalDate] {
   case node: Node => node.as[String].left.map(_.asInstanceOf[ConstructError]).map(LocalDate.parse)
@@ -72,6 +73,6 @@ val Seating = Source.fromResource("seating.yaml").getLines().mkString("\n").as[M
   case Right(seating) =>
     val s = seating.toSeq
       .flatMap { case (k, vv) => vv.map(v => v -> k) }
-      .sortBy(_._1.split("\\s+").last)
+      .sortBy(_._1.split("\\s+").reverse.toSeq)
     s ++ Seq.fill(30 - s.length % 30)("" -> "")
 }
