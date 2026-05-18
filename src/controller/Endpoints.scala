@@ -97,8 +97,10 @@ class Endpoints {
     case ("GET", "/admin/rsvps", r) => Response(view.Templates(r).rsvps(model.Database.getAllRSVPs()))
     case ("GET", "/admin/gifts", r) => Response(view.Templates(r).gifts(model.Database.getAllGifts()))
 
-    case ("GET", "/invitation", r) => Response(view.Templates(r).invitation())
-    case ("GET", "/program", r) => Response(view.Templates(r).program())
+    case ("GET", "/invitation", r) if model.Details.invitationDetails.isDefined =>
+      Response(view.Templates(r).invitation(model.Details.invitationDetails.get))
+    case ("GET", "/program", r) if model.Details.programDetails.isDefined =>
+      Response(view.Templates(r).program(model.Details.programDetails.get))
     case ("GET", "/seating", r) => Response(view.Templates(r).seating())
     // case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
     case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file))

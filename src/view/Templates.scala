@@ -333,7 +333,7 @@ class Templates(request: Request) {
     }
   )
 
-  def invitation(): String = doctype("html")(html(
+  def invitation(details: model.InvitationDetails): String = doctype("html")(html(
     head(
       link(rel:="stylesheet", href:=s"/static/style.css"),
       if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
@@ -361,21 +361,21 @@ class Templates(request: Request) {
                 ),
                 div(cls:="center",
                   div(
-                    p(em(model.Details.invitationDetails.tagline)),
+                    p(em(details.tagline)),
                     divider,
-                    p(s"${model.Details.invitationDetails.parents} warmly invite you to the wedding of"),
+                    p(s"${details.parents} warmly invite you to the wedding of"),
                     p(
                       h2(model.Details.bride),
                       h2("&"),
                       h2(model.Details.groom),
                     ),
                     p(id:="date", weekday.format(model.Details.date), span(shortformat.format(model.Details.date)), timefmt.format(model.Details.date)),
-                    Markdown.render(model.Details.invitationDetails.details),
+                    Markdown.render(details.details),
                     divider,
                     p(
                       "Get details and RSVP at", br(),
-                      a(href:=model.Details.invitationDetails.url, em(model.Details.invitationDetails.url)), br(),
-                      s"Please RSVP by ${shortformat.format(model.Details.invitationDetails.deadline)}"
+                      a(href:=details.url, em(details.url)), br(),
+                      s"Please RSVP by ${shortformat.format(details.deadline)}"
                     )
                   )
                 )
@@ -394,7 +394,7 @@ class Templates(request: Request) {
     )
   )).render
 
-  def program(): String = {
+  def program(details: model.ProgramDetails): String = {
     def people(title: String, names: Seq[String]) = div(
       strong(title), br(),
       names.map(n => frag(n, br()))
@@ -427,7 +427,7 @@ class Templates(request: Request) {
                 div(id:="b4", cls:="border",
                   div(cls:="title", s"The Wedding Ceremony of", br(), s"${model.Details.groom} & ${model.Details.bride}"),
                   s"${fullformat.format(model.Details.date)} - ${model.Details.locations.find(_.name == "Ceremony").get.address.split("\n").head}",
-                  schedule(model.Details.programDetails.ceremony),
+                  schedule(details.ceremony),
                   div(cls:="people",
                     div(
                       people("Matron of Honor", Seq(model.Details.bridesmaids.head.name)),
@@ -439,13 +439,13 @@ class Templates(request: Request) {
                     ),
                   ),
                   div(cls:="people",
-                    people("Pastors", model.Details.programDetails.pastors),
-                    people("Pianist", Seq(model.Details.programDetails.pianist)),
-                    people("Ushers", model.Details.programDetails.ushers),
+                    people("Pastors", details.pastors),
+                    people("Pianist", Seq(details.pianist)),
+                    people("Ushers", details.ushers),
                   ),
                   div(cls:="people",
-                    people("Flower Girl", Seq(model.Details.programDetails.flowerGirl)),
-                    people("Ring Bearer", Seq(model.Details.programDetails.ringBearer))
+                    people("Flower Girl", Seq(details.flowerGirl)),
+                    people("Ring Bearer", Seq(details.ringBearer))
                   )
                 )
               )
@@ -456,11 +456,11 @@ class Templates(request: Request) {
           div(
             "Reception",
             Markdown.render(model.Details.locations.find(_.name == "Reception").get.address),
-            schedule(model.Details.programDetails.reception)
+            schedule(details.reception)
           ),
           div(
             "Special Thanks",
-            Markdown.render(model.Details.programDetails.thanks)
+            Markdown.render(details.thanks)
           )
         )
       )
