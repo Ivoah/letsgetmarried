@@ -159,13 +159,13 @@ class Templates(request: Request) {
   )
 
   def registry(items: Seq[(model.RegistryItem, Boolean)], sortBy: String): String = page("Registry")(
-    if (model.Details.registry.isEmpty) p(textAlign.center, "Coming soon!")
+    fieldset(
+      legend("Please send all gifts to:"),
+      div(cls:="centered", Markdown.render(model.Details.registryAddress))
+    ),
+    Markdown.render(model.Details.registryNotes),
+    if (model.Details.registry.isEmpty) frag()
     else frag(
-      fieldset(
-        legend("Please send all gifts to:"),
-        div(cls:="centered", Markdown.render(model.Details.registryAddress))
-      ),
-      Markdown.render(model.Details.registryNotes),
       divider,
       "Sort by: ", Seq(
         ("None", ""),
