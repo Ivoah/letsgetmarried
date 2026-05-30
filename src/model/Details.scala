@@ -24,6 +24,7 @@ private given YamlDecoder[InviteStatus] = YamlDecoder[InviteStatus] {
 private case class YamlDetails(
   underConstruction: Boolean,
   contact: String,
+  headerImages: Seq[String],
   groom: String,
   bride: String,
   image: String,

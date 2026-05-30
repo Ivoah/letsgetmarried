@@ -58,9 +58,7 @@ class Templates(request: Request) {
   )
 
   private def _header(currentPage: String) = header(
-    p(cls:="suites",
-      Seq("heart", "club", "diamond", "spade").map(suite => img(src:=s"/static/$suite.png"))
-    ),
+    p(cls:="headerImages", model.Details.headerImages.map(s => img(src:=s))),
     if (model.Details.underConstruction) h3("Website under construction - information subject to change") else frag(),
     h1(s"${model.Details.groom.split(" ").head} & ${model.Details.bride.split(" ").head}"),
     h3(s"${fullformat.format(model.Details.date)} • ${model.Details.location}"),
