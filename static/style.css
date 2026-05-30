@@ -108,7 +108,7 @@ dialog {
 }
 
 header {
-  .suites {
+  .headerImages {
     display: flex;
     justify-content: center;
     margin: 100px 0;
@@ -230,6 +230,7 @@ footer {
     place-self: center;
     background: white;
     border: solid 10px white;
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 25%));
 
     transition-property: width, transform;
     transition-duration: 200ms;
