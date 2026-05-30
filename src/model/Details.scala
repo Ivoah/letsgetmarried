@@ -40,6 +40,7 @@ private case class YamlDetails(
   registryAddress: String,
   registryNotes: String,
   registry: Seq[RegistryItem],
+  rsvpNotes: String,
   invitations: Seq[Invitation],
   hotelNotes: String,
   hotels: Seq[Hotel]

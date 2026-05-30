@@ -230,18 +230,16 @@ class Templates(request: Request) {
   )
 
   def rsvp(): String = page("RSVP")(
-    if (model.Details.invitations.isEmpty) {
-      p(textAlign.center, "Coming soon!")
-    } else {
-      form(action:="/rsvp", method:="GET",
-        input(
-          `type`:="search",
-          name:="name",
-          placeholder:="Full name",
-        ),
-        input(`type`:="submit", value:="Find your invitation")
-      )
-    }
+    Markdown.render(model.Details.rsvpNotes),
+    if (model.Details.invitations.isEmpty) frag()
+    else form(action:="/rsvp", method:="GET",
+      input(
+        `type`:="search",
+        name:="name",
+        placeholder:="Full name",
+      ),
+      input(`type`:="submit", value:="Find your invitation")
+    )
   )
 
   def rsvpFound(invitation: model.Invitation, rsvp: Option[model.RSVP]): String = page("RSVP", Some(s"RSVP for ${invitation.name}"))(
