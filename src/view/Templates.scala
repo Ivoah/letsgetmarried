@@ -44,9 +44,8 @@ class Templates(request: Request) {
     "Wedding Party" -> "/party",
     "Photos" -> "/photos",
     "Registry" -> "/registry",
-    "RSVP" -> "/rsvp",
-    "Hotels" -> "/hotels"
-  )
+    "RSVP" -> "/rsvp"
+  ) ++ (if (model.Details.hotels.nonEmpty) Seq("Hotels" -> "/hotels") else Seq())
 
   private def _head(_title: String) = head(
     title(s"${model.Details.groom.split(" ").head} & ${model.Details.bride.split(" ").head} - $_title"),
