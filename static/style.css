@@ -154,6 +154,11 @@ footer {
 .markdown {
   text-align: justify;
   text-indent: 2em;
+
+  p:has(img) {
+    text-align: center;
+    text-indent: 0;
+  }
 }
 
 .divider {
