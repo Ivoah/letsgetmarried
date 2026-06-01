@@ -426,11 +426,11 @@ class Templates(request: Request) {
                   div(cls:="people",
                     div(
                       people("Matron of Honor", Seq(model.Details.bridesmaids.head.name)),
-                      people("Bridesmaids", model.Details.bridesmaids/*.tail*/.map(_.name))
+                      people("Bridesmaids", model.Details.bridesmaids.tail.map(_.name))
                     ),
                     div(
                       people("Best Man", Seq(model.Details.groomsmen.head.name)),
-                      people("Groomsmen", model.Details.groomsmen/*.tail*/.map(_.name))
+                      people("Groomsmen", model.Details.groomsmen.tail.map(_.name))
                     ),
                   ),
                   div(cls:="people",
