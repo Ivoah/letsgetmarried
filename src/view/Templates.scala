@@ -10,7 +10,6 @@ import net.ivoah.vial.Request
 
 import java.net.URI
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 val words = raw"\w+".r
 extension (s: String) {
@@ -55,6 +54,7 @@ class Templates(request: Request) {
     if (request.cookies.exists(_.name == "neko")) script(src:="/static/neko.js") else frag(),
     link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
     link(rel:="stylesheet", href:=s"/static/style.css"),
+    model.Details.style.map(tag("style")(_))
   )
 
   private def _header(currentPage: String) = header(
