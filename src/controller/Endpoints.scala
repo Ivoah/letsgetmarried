@@ -34,7 +34,7 @@ class Endpoints {
             } else {
               Response(view.Templates(r).message("Registry", "Could not unmark item as purchased. Make sure you entered the name exactly as when you marked the item as purchased."), status_code = 400)
             }
-          }
+          }.getOrElse(Response.BadRequest())
         case None => Response.NotFound()
       }
     case ("POST", s"/registry/$id", r) =>
@@ -55,7 +55,7 @@ class Endpoints {
                 Response(view.Templates(r).message("Registry", "Thank you! Your gift has been recorded."))
               } else Response(view.Templates(r).message("Registry", "Could not mark item as purchased"), status_code = 500)
             }.merge
-          }
+          }.getOrElse(Response.BadRequest())
         case None => Response.NotFound()
       }
     case ("GET", s"/rsvp", r) =>
@@ -83,7 +83,7 @@ class Endpoints {
           case None =>
             Response(view.Templates(r).message("RSVP", s"Could not find invitation for \"${name}\""), status_code = 404)
         }
-      }
+      }.getOrElse(Response.BadRequest())
     case ("GET", "/hotels", r) => Response(view.Templates(r).hotels())
     case ("POST", "/settings", r) =>
       view.Templates.settings.foldLeft(Response.Redirect(r.headers.get("Referer").map(_.head).getOrElse("/"))) { (response, setting) =>

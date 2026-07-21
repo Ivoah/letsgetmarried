@@ -9,10 +9,11 @@ import mill.javalib.api.CompilationResult
 import java.util.Base64
 
 object `package` extends ScalaModule {
-  def scalaVersion = "3.3.6"
+  def scalaVersion = "3.3.8"
   def mvnDeps: T[Seq[Dep]] = Seq(
     mvn"org.rogach::scallop::5.2.0",
-    mvn"net.ivoah::vial:0.9.0",
+    mvn"net.ivoah::vial:0.12.2",
+    mvn"net.ivoah::squall:0.0.2",
     mvn"com.lihaoyi::scalatags:0.13.1",
     mvn"org.virtuslab::scala-yaml:0.3.0",
     mvn"org.commonmark:commonmark:0.26.0",

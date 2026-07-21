@@ -1,10 +1,10 @@
 package net.ivoah.letsgetmarried
 package model
 
-import sql.*
+import net.ivoah.squall.*
 
 object Database {
-  given Database = model.sql.Database("jdbc:sqlite:database.db")
+  given Connector = Connector("jdbc:sqlite:database.db")
 
   def getAllRSVPs(): Seq[RSVP] = sql"SELECT * FROM rsvp".query(RSVP.fromResultSet)
   def findRSVP(name: String): Option[RSVP] = sql"SELECT * FROM rsvp WHERE name=$name".query(RSVP.fromResultSet).headOption
