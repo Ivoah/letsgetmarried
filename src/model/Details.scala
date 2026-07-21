@@ -7,18 +7,34 @@ import java.time.{LocalDate, LocalDateTime}
 import scala.io.Source
 import scala.math.Ordering.Implicits.seqOrdering
 
-private given YamlDecoder[LocalDate] = YamlDecoder[LocalDate] {
-  case node: Node => node.as[String].left.map(_.asInstanceOf[ConstructError]).map(LocalDate.parse)
+private given YamlCodec[LocalDate] = new YamlCodec[LocalDate] {
+  override def construct(node: Node)(implicit settings: LoadSettings): Either[ConstructError, LocalDate] = {
+    node.as[String]
+      .map(LocalDate.parse)
+      .left.map(_.asInstanceOf[ConstructError])
+  }
+
+  override def asNode(ld: LocalDate): Node = Node.ScalarNode(ld.toString)
 }
 
-private given YamlDecoder[LocalDateTime] = YamlDecoder[LocalDateTime] {
-  case node: Node => node.as[String].left.map(_.asInstanceOf[ConstructError]).map(LocalDateTime.parse)
+private given YamlCodec[LocalDateTime] = new YamlCodec[LocalDateTime] {
+  override def construct(node: Node)(implicit settings: LoadSettings): Either[ConstructError, LocalDateTime] = {
+    node.as[String]
+      .map(LocalDateTime.parse)
+      .left.map(_.asInstanceOf[ConstructError])
+  }
+  
+  override def asNode(ldt: LocalDateTime): Node = Node.ScalarNode(ldt.toString)
 }
 
-private given YamlDecoder[InviteStatus] = YamlDecoder[InviteStatus] {
-  case node: Node => node.as[String]
-    .left.map(_.asInstanceOf[ConstructError])
-    .flatMap(s => InviteStatus.values.find(_.key == s).toRight(ConstructError(s"Could not decode InviteStatus", Some(node), Some(InviteStatus.values.map(_.key).mkString(", ")))))
+private given YamlCodec[InviteStatus] = new YamlCodec[InviteStatus] {
+  override def construct(node: Node)(implicit settings: LoadSettings): Either[ConstructError, InviteStatus] = {
+    node.as[String]
+      .left.map(_.asInstanceOf[ConstructError])
+      .flatMap(s => InviteStatus.values.find(_.key == s).toRight(ConstructError(s"Could not decode InviteStatus", Some(node), Some(InviteStatus.values.map(_.key).mkString(", ")))))
+  }
+
+  override def asNode(status: InviteStatus): Node = Node.ScalarNode(status.key)
 }
 
 private case class YamlDetails(
@@ -45,11 +61,13 @@ private case class YamlDetails(
   invitations: Seq[Invitation],
   hotelNotes: String,
   hotels: Seq[Hotel]
-) derives YamlDecoder {
+) derives YamlCodec {
   require(registry.distinctBy(_.id).length == registry.length, "Duplicate id in registry list")
+
+  def serialize: String = this.asYaml
 }
 
-case class InvitationDetails(tagline: String, parents: String, details: String, url: String, deadline: LocalDate) derives YamlDecoder
+case class InvitationDetails(tagline: String, parents: String, details: String, url: String, deadline: LocalDate) derives YamlCodec
 case class ProgramDetails(ceremony: Seq[Seq[String]], pastors: Seq[String], pianist: String, ushers: Seq[String], flowerGirl: String, ringBearer: String, reception: Seq[Seq[String]], thanks: String) derives YamlCodec
 case class Location(name: String, time: String, address: String, link: String, details: String) derives YamlCodec
 case class Story(title: String, image: String, body: String) derives YamlCodec
@@ -63,7 +81,7 @@ enum InviteStatus(val key: String) {
   case NotApplicable extends InviteStatus("n/a")
 }
 
-case class Invitation(name: String, people: Seq[String], children: InviteStatus) derives YamlDecoder
+case class Invitation(name: String, people: Seq[String], children: InviteStatus) derives YamlCodec
 case class Hotel(name: String, address: String, link: String) derives YamlCodec
 
 val Details = Source.fromResource("details.yaml").getLines().mkString("\n").as[YamlDetails] match {
