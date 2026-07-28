@@ -45,7 +45,7 @@ private case class YamlDetails(
   groom: String,
   bride: String,
   image: String,
-  date: LocalDateTime,
+  date: LocalDate,
   location: String,
   invitationDetails: Option[InvitationDetails],
   programDetails: Option[ProgramDetails],

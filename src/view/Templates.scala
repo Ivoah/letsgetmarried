@@ -114,7 +114,7 @@ class Templates(request: Request) {
       h3(location.time),
       div(
         h3(location.name),
-        a(href:=location.link, Markdown.render(location.address)),
+        a(href:=location.link, div(cls:="pre-wrap", location.address)),
         Markdown.render(location.details)
       )
     )
@@ -132,7 +132,7 @@ class Templates(request: Request) {
       div(
         h3(member.name, br(), member.role),
         img(src:=member.image),
-        Markdown.render(member.bio)
+        div(cls:="markdown", Markdown.render(member.bio))
       )
     )
 
@@ -148,7 +148,7 @@ class Templates(request: Request) {
     model.Details.photos.map { p =>
       figure(css("transform"):=s"rotate(${Random.between(-15.0, 15.0)}deg)",
         img(src:=p.image),
-        div(figcaption(p.caption.map(Markdown.render(_)).getOrElse(frag())), a(href:=p.image, download:="", img(src:="/static/download.svg")))
+        div(figcaption(p.caption.map(Markdown.render(_))), a(href:=p.image, download:="", img(src:="/static/download.svg")))
       )
     },
     script(raw(
@@ -161,7 +161,7 @@ class Templates(request: Request) {
   def registry(items: Seq[(model.RegistryItem, Boolean)], sortBy: String): String = page("Registry")(
     fieldset(
       legend("Please send all gifts to:"),
-      div(cls:="centered", Markdown.render(model.Details.registryAddress))
+      div(cls:="centered", div(cls:="pre-wrap", model.Details.registryAddress))
     ),
     Markdown.render(model.Details.registryNotes),
     if (model.Details.registry.isEmpty) frag()
@@ -270,7 +270,7 @@ class Templates(request: Request) {
   )
 
   def hotels(): String = page("Hotels")(
-    p(model.Details.hotelNotes),
+    Markdown.render(model.Details.hotelNotes),
     divider,
     model.Details.hotels.map { hotel =>
       Markdown.render(s"${hotel.name}  \n[${hotel.address}](${hotel.link})")
