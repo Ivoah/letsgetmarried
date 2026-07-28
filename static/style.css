@@ -161,6 +161,10 @@ footer {
   }
 }
 
+.pre-wrap {
+  white-space: pre-wrap;
+}
+
 .divider {
   text-align: center;
   img {
@@ -204,11 +208,6 @@ footer {
 
       > h3 {
         font-weight: bold;
-      }
-
-      > p {
-        text-align: justify;
-        text-indent: 2em;
       }
     }
 
