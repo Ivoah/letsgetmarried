@@ -18,12 +18,12 @@ class Endpoints(details: model.Details) {
     case ("GET", "/party", r) => Response(view.Templates(details, r).party())
     case ("GET", "/photos", r) => Response(view.Templates(details, r).photos())
     case ("GET", "/registry", r) =>
-      val items = details.registry.map(item => item -> model.Database.getRegistryItemPurchase(item).nonEmpty)
+      val items = details.registry.items.map(item => item -> model.Database.getRegistryItemPurchase(item).nonEmpty)
       Response(view.Templates(details, r).registry(items, r.params.getOrElse("sortBy", "")))
     // POST /registry/delete/$id is before POST /registry/$id so it matches first
     case ("POST", s"/registry/delete/$id", r) =>
       println(id)
-      details.registry.find(_.id == id) match {
+      details.registry.items.find(_.id == id) match {
         case Some(item) =>
           r.form.expect("purchasedBy") { (purchasedBy: String) =>
             if (model.Database.getRegistryItemPurchase(item).contains(purchasedBy)) {
@@ -38,7 +38,7 @@ class Endpoints(details: model.Details) {
         case None => Response.NotFound()
       }
     case ("POST", s"/registry/$id", r) =>
-      details.registry.find(_.id == id) match {
+      details.registry.items.find(_.id == id) match {
         case Some(item) =>
           r.form.expect("purchasedBy", "notes") { (purchasedBy: String, notes: String) =>
             ((purchasedBy, r.form.get("amount")) match {
@@ -61,9 +61,9 @@ class Endpoints(details: model.Details) {
     case ("GET", s"/rsvp", r) =>
       r.params.get("name") match {
         case Some(name) =>
-          details.invitations.find(invite => (invite.name +: invite.people).exists(_.equalsIgnoreCase(name.strip().split("\\s+").mkString(" ")))) match {
+          details.rsvp.invitations.find(invite => (invite.name +: invite.people).exists(_.equalsIgnoreCase(name.strip().split("\\s+").mkString(" ")))) match {
             case Some(invitation) => Response(view.Templates(details, r).rsvpFound(invitation, model.Database.findRSVP(invitation.name)))
-            case None => Response(view.Templates(details, r).message("RSVP", s"Could not find an invitation for \"$name\". Please make sure you entered your full first and last name as it appears on your invitation. Contact [${details.contact}](mailto:${details.contact}) if you believe this is in error."), status_code = 404)
+            case None => Response(view.Templates(details, r).message("RSVP", s"Could not find an invitation for \"$name\". Please make sure you entered your full first and last name as it appears on your invitation. Contact [${details.general.contact}](mailto:${details.general.contact}) if you believe this is in error."), status_code = 404)
           }
         case None => Response(view.Templates(details, r).rsvp())
       }
@@ -72,7 +72,7 @@ class Endpoints(details: model.Details) {
       r.form.expect("name", "regards") { (name: String, regards: String) =>
         val children = r.form.get("children").map(_.asInstanceOf[String].toInt).getOrElse(0)
         val infants = r.form.get("infants").map(_.asInstanceOf[String].toInt).getOrElse(0)
-        details.invitations.find(_.name == name) match {
+        details.rsvp.invitations.find(_.name == name) match {
           case Some(invitation) =>
             val people = invitation.people.filter(r.form.contains)
             val rsvp = model.RSVP(invitation.name, people, children, infants, regards)
@@ -101,10 +101,8 @@ class Endpoints(details: model.Details) {
     case ("GET", "/admin/rsvps", r) => Response(view.Templates(details, r).rsvps(model.Database.getAllRSVPs()))
     case ("GET", "/admin/gifts", r) => Response(view.Templates(details, r).gifts(model.Database.getAllGifts()))
 
-    case ("GET", "/invitation", r) if details.invitationDetails.isDefined =>
-      Response(view.Templates(details, r).invitation(details.invitationDetails.get))
-    case ("GET", "/program", r) if details.programDetails.isDefined =>
-      Response(view.Templates(details, r).program(details.programDetails.get))
+    case ("GET", "/invitation", r) => Response(view.Templates(details, r).invitation())
+    case ("GET", "/program", r) => Response(view.Templates(details, r).program())
     case ("GET", "/seating", r) => Response(view.Templates(details, r).seating())
     // case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
     case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file))

@@ -43,26 +43,27 @@ class Templates(details: model.Details, request: Request) {
     "Wedding Party" -> "/party",
     "Photos" -> "/photos",
     "Registry" -> "/registry",
-    "RSVP" -> "/rsvp"
-  ) ++ (if (details.hotels.nonEmpty) Seq("Hotels" -> "/hotels") else Seq())
+    "RSVP" -> "/rsvp",
+    "Hotels" -> "/hotels"
+  )
 
   private def _head(_title: String) = head(
-    title(s"${details.groom.split(" ").head} & ${details.bride.split(" ").head} - $_title"),
+    title(s"${details.general.groom.split(" ").head} & ${details.general.bride.split(" ").head} - $_title"),
     meta(name:="viewport", content:="width=device-width", attr("initial-scale"):="1.0"),
     script(src:="/static/konami.js"),
     if (request.cookies.exists(_.name == "neko")) script(src:="/static/neko.js") else frag(),
     link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
     link(rel:="stylesheet", href:=s"/static/style.css"),
-    details.style.map(css => tag("style")(raw(css)))
+    details.general.style.map(css => tag("style")(raw(css)))
   )
 
   private def _header(currentPage: String) = header(
-    p(cls:="headerImages", details.headerImages.map(s => img(src:=s))),
-    if (details.underConstruction) h3("Website under construction - information subject to change") else frag(),
-    h1(s"${details.groom.split(" ").head} & ${details.bride.split(" ").head}"),
-    h3(s"${fullformat.format(details.date)} • ${details.location}"),
+    p(cls:="headerImages", details.general.headerImages.map(s => img(src:=s))),
+    if (details.general.underConstruction) h3("Website under construction - information subject to change") else frag(),
+    h1(s"${details.general.groom.split(" ").head} & ${details.general.bride.split(" ").head}"),
+    h3(s"${fullformat.format(details.general.date)} • ${details.general.location}"),
     h3({
-      val days = ChronoUnit.DAYS.between(LocalDate.now(), details.date)
+      val days = ChronoUnit.DAYS.between(LocalDate.now(), details.general.date)
       if (days == 0) "Today's the day! The sun is shining, the tank is clean!"
       else s"$days days to go!"
     }),
@@ -73,8 +74,8 @@ class Templates(details: model.Details, request: Request) {
 
   private def _footer() = footer(
     divider,
-    h1(cls:="underline", s"${details.groom.head}&${details.bride.head}"),
-    shortformat.format(details.date),
+    h1(cls:="underline", s"${details.general.groom.head}&${details.general.bride.head}"),
+    shortformat.format(details.general.date),
     p("Created from scratch"),
     p("Getting married? ", a(href:="https://github.com/ivoah/letsgetmarried", "Create your wedding website for free.")),
     p("up-up-down-down-left-right-left-right-b-a")
@@ -106,10 +107,10 @@ class Templates(details: model.Details, request: Request) {
   def message(tab: String, msg: String): String = page(tab)(div(cls:="centered", Markdown.render(msg)))
 
   def home(): String = page("Home")(
-    img(src:=details.image),
-    h2(s"The wedding of ${details.groom} & ${details.bride}"),
-    h3(fullformat.format(details.date)),
-    for (location <- details.locations) yield div(cls:="location",
+    img(src:=details.home.image),
+    h2(s"The wedding of ${details.general.groom} & ${details.general.bride}"),
+    h3(fullformat.format(details.general.date)),
+    for (location <- details.home.locations) yield div(cls:="location",
       h3(location.time),
       div(
         h3(location.name),
@@ -127,7 +128,7 @@ class Templates(details: model.Details, request: Request) {
 
 
   def party(): String = {
-    def partyMember(member: model.PartyMember) = div(
+    def partyMember(member: model.Details.WeddingParty.PartyMember) = div(
       div(
         h3(member.name, br(), member.role),
         img(src:=member.image),
@@ -136,7 +137,7 @@ class Templates(details: model.Details, request: Request) {
     )
 
     page("Wedding Party")(
-      details.bridesmaids.zip(details.groomsmen).map { (bridesmaid, groomsman) => div(
+      details.weddingParty.bridesmaids.zip(details.weddingParty.groomsmen).map { (bridesmaid, groomsman) => div(
         partyMember(bridesmaid),
         partyMember(groomsman)
       )}
@@ -144,7 +145,7 @@ class Templates(details: model.Details, request: Request) {
   }
 
   def photos(): String = page("Photos")(
-    details.photos.map { p =>
+    details.photos.photos.map { p =>
       figure(css("transform"):=s"rotate(${Random.between(-15.0, 15.0)}deg)",
         img(src:=p.image),
         div(figcaption(p.caption.map(Markdown.render(_))), a(href:=p.image, download:="", img(src:="/static/download.svg")))
@@ -157,13 +158,13 @@ class Templates(details: model.Details, request: Request) {
     ))
   )
 
-  def registry(items: Seq[(model.RegistryItem, Boolean)], sortBy: String): String = page("Registry")(
+  def registry(items: Seq[(model.Details.Registry.Item, Boolean)], sortBy: String): String = page("Registry")(
     fieldset(
       legend("Please send all gifts to:"),
-      div(cls:="centered", div(cls:="pre-wrap", details.registryAddress))
+      div(cls:="centered", div(cls:="pre-wrap", details.registry.address))
     ),
-    Markdown.render(details.registryNotes),
-    if (details.registry.isEmpty) frag()
+    Markdown.render(details.registry.notes),
+    if (details.registry.items.isEmpty) frag()
     else frag(
       divider,
       "Sort by: ", Seq(
@@ -229,8 +230,8 @@ class Templates(details: model.Details, request: Request) {
   )
 
   def rsvp(): String = page("RSVP")(
-    Markdown.render(details.rsvpNotes),
-    if (details.invitations.isEmpty) frag()
+    Markdown.render(details.rsvp.notes),
+    if (details.rsvp.invitations.isEmpty) frag()
     else form(action:="/rsvp", method:="GET",
       input(
         `type`:="search",
@@ -241,27 +242,23 @@ class Templates(details: model.Details, request: Request) {
     )
   )
 
-  def rsvpFound(invitation: model.Invitation, rsvp: Option[model.RSVP]): String = page("RSVP", Some(s"RSVP for ${invitation.name}"))(
+  def rsvpFound(invitation: model.Details.RSVP.Invitation, rsvp: Option[model.RSVP]): String = page("RSVP", Some(s"RSVP for ${invitation.name}"))(
     form(action:="/rsvp", method:="POST",
       fieldset(
         legend(s"RSVP for ${invitation.name}"),
         "Who will be attending?",
-        invitation.children match {
-          case model.InviteStatus.Invited => " Please indicate how many children you are bringing and if they will need a seat at the table."
-          case model.InviteStatus.NotInvited => " Due to space limitations we are only able to accommodate those listed on the invitation."
-          case _ => frag()
+        invitation.childrenInvited.map { invited =>
+          if (invited) " Please indicate how many children you are bringing and if they will need a seat at the table."
+          else " Due to space limitations we are only able to accommodate those listed on the invitation."
         }, br(),
         input(`type`:="hidden", name:="name", value:=invitation.name),
         for (person <- invitation.people) yield frag(
           label(input(`type`:="checkbox", name:=person, if (rsvp.exists(_.people.contains(person))) checked else frag()), s" $person"), br()
         ),
-        invitation.children match {
-          case model.InviteStatus.Invited => frag(
-            label("Children: ", input(`type`:="number", name:="children", min:=0, max:=9, value:=rsvp.map(_.children).getOrElse(0))), br(),
-            label("Infants: ", input(`type`:="number", name:="infants", min:=0, max:=9, value:=rsvp.map(_.infants).getOrElse(0))), br(),
-          )
-          case _ => frag()
-        },
+        if (invitation.childrenInvited.contains(true)) frag(
+          label("Children: ", input(`type`:="number", name:="children", min:=0, max:=9, value:=rsvp.map(_.children).getOrElse(0))), br(),
+          label("Infants: ", input(`type`:="number", name:="infants", min:=0, max:=9, value:=rsvp.map(_.infants).getOrElse(0))), br(),
+        ) else frag(),
         label("Regards:", textarea(name:="regards", rsvp.map(_.regards).getOrElse(""))),
         input(`type`:="submit", value:=s"${if (rsvp.nonEmpty) "Update" else "Save"} RSVP")
       )
@@ -269,9 +266,9 @@ class Templates(details: model.Details, request: Request) {
   )
 
   def hotels(): String = page("Hotels")(
-    Markdown.render(details.hotelNotes),
+    Markdown.render(details.hotels.notes),
     divider,
-    details.hotels.map { hotel =>
+    details.hotels.hotels.map { hotel =>
       Markdown.render(s"${hotel.name}  \n[${hotel.address}](${hotel.link})")
     }
   )
@@ -291,11 +288,11 @@ class Templates(details: model.Details, request: Request) {
       s"Infants: ${rsvps.map(_.infants).sum}", br(),
       s"Total: ${rsvps.map(_.total).sum} (${rsvps.count(_.total > 0)})", br(),
       s"Outstanding: ${
-        val outstanding = details.invitations.filter(i => !rsvps.exists(r => r.name == i.name))
-        s"${outstanding.map(_.people.length).sum}${if (outstanding.exists(_.children == model.InviteStatus.Invited)) "+" else ""} (${outstanding.length})"
+        val outstanding = details.rsvp.invitations.filter(i => !rsvps.exists(r => r.name == i.name))
+        s"${outstanding.map(_.people.length).sum}${if (outstanding.exists(_.childrenInvited.contains(true))) "+" else ""} (${outstanding.length})"
       }"
     ),
-    for (invite <- details.invitations) yield {
+    for (invite <- details.rsvp.invitations) yield {
       val rsvp = rsvps.find(_.name == invite.name)
       val coming = rsvp match {
         case Some(r) if r.total == 0 => "notComing"
@@ -321,7 +318,7 @@ class Templates(details: model.Details, request: Request) {
           span(s"${gifts.length}")
         ),
         ul(gifts.map(gift => frag(
-          li(attr("title"):=gift.id, s"${details.registry.find(_.id == gift.id).get.name}", gift.amount.map(g => s": $$$g").getOrElse("")),
+          li(attr("title"):=gift.id, s"${details.registry.items.find(_.id == gift.id).get.name}", gift.amount.map(g => s": $$$g").getOrElse("")),
           if (gift.notes.nonEmpty) p(gift.notes) else frag()
         )))
       )
@@ -331,20 +328,20 @@ class Templates(details: model.Details, request: Request) {
   def editDetails() = page("Edit details")(
     form(method:="POST",
       ul(
-        li(label(input(tpe:="checkbox", name:="underConstruction", if (details.underConstruction) checked else frag()), " Under construction")),
-        li(label("Contact: ", input(name:="contact", value:=details.contact))),
-        li(label("Style", textarea(name:="style", value:=details.style.getOrElse("")))),
+        li(label(input(tpe:="checkbox", name:="underConstruction", if (details.general.underConstruction) checked else frag()), " Under construction")),
+        li(label("Contact: ", input(name:="contact", value:=details.general.contact))),
+        li(label("Style", textarea(name:="style", value:=details.general.style.getOrElse("")))),
         li("Header images", ul(
-          for (img <- details.headerImages) yield li(input(tpe:="file", value:=img))
+          for (img <- details.general.headerImages) yield li(input(tpe:="file", value:=img))
         )),
-        li(label("Groom: ", input(name:="groom", value:=details.groom))),
-        li(label("Bride: ", input(name:="bride", value:=details.bride))),
-        li(label("Date: ", input(tpe:="date", name:="date", value:=details.date.toString))),
-        li(label("Location: ", input(name:="location", value:=details.location))),
+        li(label("Groom: ", input(name:="groom", value:=details.general.groom))),
+        li(label("Bride: ", input(name:="bride", value:=details.general.bride))),
+        li(label("Date: ", input(tpe:="date", name:="date", value:=details.general.date.toString))),
+        li(label("Location: ", input(name:="location", value:=details.general.location))),
         li("Home tab", ul(
           li(label("Hero image: ", input(tpe:="file", name:="hero"))),
           li("Locations", ul(
-            for ((location, i) <- details.locations.zipWithIndex) yield fieldset(
+            for ((location, i) <- details.home.locations.zipWithIndex) yield fieldset(
               legend(s"Location ${i + 1}"),
               ul(
                 li(label("Name: ", input(name:="locationName", value:=location.name))),
@@ -364,7 +361,7 @@ class Templates(details: model.Details, request: Request) {
     )
   )
 
-  def invitation(inviteDetails: model.InvitationDetails): String = doctype("html")(html(
+  def invitation(): String = doctype("html")(html(
     head(
       link(rel:="stylesheet", href:=s"/static/style.css"),
       link(rel:="stylesheet", href:=s"/static/invitation.css"),
@@ -382,30 +379,30 @@ class Templates(details: model.Details, request: Request) {
               div(cls:="gridBorder side", css("grid-area"):="w", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
               div(id:="b4", cls:="border",
                 div(id:="tl", cls:="corner",
-                  h2(details.bride.head.toString),
+                  h2(details.general.bride.head.toString),
                   h1(cls:="heart", "♥")
                 ),
                 div(id:="br", cls:="corner",
-                  h2(details.groom.head.toString),
+                  h2(details.general.groom.head.toString),
                   h1(cls:="heart", "♥")
                 ),
                 div(cls:="center",
                   div(
-                    p(em(inviteDetails.tagline)),
+                    p(em(details.invitation.tagline)),
                     divider,
-                    p(s"${inviteDetails.parents} warmly invite you to the wedding of"),
+                    p(s"${details.invitation.parents} warmly invite you to the wedding of"),
                     p(
-                      h2(details.bride),
+                      h2(details.general.bride),
                       h2("&"),
-                      h2(details.groom),
+                      h2(details.general.groom),
                     ),
-                    p(id:="date", weekday.format(details.date), span(shortformat.format(details.date)), timefmt.format(details.date)),
-                    Markdown.render(inviteDetails.details),
+                    p(id:="date", weekday.format(details.general.date), span(shortformat.format(details.general.date)), timefmt.format(details.general.date)),
+                    Markdown.render(details.invitation.details),
                     divider,
                     p(
                       "Get details and RSVP at", br(),
-                      a(href:=inviteDetails.url, em(inviteDetails.url)), br(),
-                      s"Please RSVP by ${shortformat.format(inviteDetails.deadline)}"
+                      a(href:=details.invitation.url, em(details.invitation.url)), br(),
+                      s"Please RSVP by ${shortformat.format(details.invitation.deadline)}"
                     )
                   )
                 )
@@ -416,15 +413,15 @@ class Templates(details: model.Details, request: Request) {
       ),
       div(id:="back",
         div(
-          h2(details.bride.split(raw"\s+").map(_.head).mkString),
+          h2(details.general.bride.split(raw"\s+").map(_.head).mkString),
           h1("♥", lineHeight:=0.8),
-          h2(details.groom.split(raw"\s+").map(_.head).mkString)
+          h2(details.general.groom.split(raw"\s+").map(_.head).mkString)
         )
       )
     )
   )).render
 
-  def program(programDetails: model.ProgramDetails): String = {
+  def program(): String = {
     def people(title: String, names: Seq[String]) = div(
       strong(title), br(),
       names.map(n => frag(n, br()))
@@ -454,27 +451,27 @@ class Templates(details: model.Details, request: Request) {
                 div(cls:="gridBorder side", css("grid-area"):="e", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
                 div(cls:="gridBorder side", css("grid-area"):="w", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
                 div(id:="b4", cls:="border",
-                  div(cls:="title", s"The Wedding Ceremony of", br(), s"${details.groom} & ${details.bride}"),
-                  s"${fullformat.format(details.date)} - ${details.locations.find(_.name == "Ceremony").get.address.split("\n").head}",
-                  schedule(programDetails.ceremony),
+                  div(cls:="title", s"The Wedding Ceremony of", br(), s"${details.general.groom} & ${details.general.bride}"),
+                  s"${fullformat.format(details.general.date)} - ${details.home.locations.find(_.name == "Ceremony").get.address.split("\n").head}",
+                  schedule(details.program.ceremony),
                   div(cls:="people",
                     div(
-                      people("Matron of Honor", Seq(details.bridesmaids.head.name)),
-                      people("Bridesmaids", details.bridesmaids.tail.map(_.name))
+                      people("Matron of Honor", Seq(details.weddingParty.bridesmaids.head.name)),
+                      people("Bridesmaids", details.weddingParty.bridesmaids.tail.map(_.name))
                     ),
                     div(
-                      people("Best Man", Seq(details.groomsmen.head.name)),
-                      people("Groomsmen", details.groomsmen.tail.map(_.name))
+                      people("Best Man", Seq(details.weddingParty.groomsmen.head.name)),
+                      people("Groomsmen", details.weddingParty.groomsmen.tail.map(_.name))
                     ),
                   ),
                   div(cls:="people",
-                    people("Pastors", programDetails.pastors),
-                    people("Pianist", Seq(programDetails.pianist)),
-                    people("Ushers", programDetails.ushers),
+                    people("Pastors", details.program.pastors),
+                    people("Pianist", Seq(details.program.pianist)),
+                    people("Ushers", details.program.ushers),
                   ),
                   div(cls:="people",
-                    people("Flower Girl", Seq(programDetails.flowerGirl)),
-                    people("Ring Bearer", Seq(programDetails.ringBearer))
+                    people("Flower Girl", Seq(details.program.flowerGirl)),
+                    people("Ring Bearer", Seq(details.program.ringBearer))
                   )
                 )
               )
@@ -484,12 +481,12 @@ class Templates(details: model.Details, request: Request) {
         div(id:="back",
           div(
             "Reception",
-            Markdown.render(details.locations.find(_.name == "Reception").get.address),
-            schedule(programDetails.reception)
+            Markdown.render(details.home.locations.find(_.name == "Reception").get.address),
+            schedule(details.program.reception)
           ),
           div(
             "Special Thanks",
-            Markdown.render(programDetails.thanks)
+            Markdown.render(details.program.thanks)
           )
         )
       )
