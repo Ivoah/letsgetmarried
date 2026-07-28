@@ -50,7 +50,6 @@ class Templates(details: model.Details, request: Request) {
     title(s"${details.groom.split(" ").head} & ${details.bride.split(" ").head} - $_title"),
     meta(name:="viewport", content:="width=device-width", attr("initial-scale"):="1.0"),
     script(src:="/static/konami.js"),
-    if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
     if (request.cookies.exists(_.name == "neko")) script(src:="/static/neko.js") else frag(),
     link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
     link(rel:="stylesheet", href:=s"/static/style.css"),
@@ -368,7 +367,6 @@ class Templates(details: model.Details, request: Request) {
   def invitation(inviteDetails: model.InvitationDetails): String = doctype("html")(html(
     head(
       link(rel:="stylesheet", href:=s"/static/style.css"),
-      if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
       link(rel:="stylesheet", href:=s"/static/invitation.css"),
       link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
       title("Invitation")
@@ -442,7 +440,6 @@ class Templates(details: model.Details, request: Request) {
     doctype("html")(html(
       head(
         link(rel:="stylesheet", href:=s"/static/style.css"),
-        if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
         link(rel:="stylesheet", href:=s"/static/program.css"),
         link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
         title("Program")
@@ -503,7 +500,6 @@ class Templates(details: model.Details, request: Request) {
     doctype("html")(html(
       head(
         link(rel:="stylesheet", href:=s"/static/style.css"),
-        if (request.cookies.exists(_.name == "mazda")) link(rel:="stylesheet", href:="/static/mazda.css") else frag(),
         link(rel:="stylesheet", href:=s"/static/seating.css"),
         link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
         title("Seating labels")
@@ -526,5 +522,5 @@ class Templates(details: model.Details, request: Request) {
 }
 
 object Templates {
-  val settings: Seq[String] = Seq("mazda", "scramble", "neko")
+  val settings: Seq[String] = Seq("scramble", "neko")
 }
