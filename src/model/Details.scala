@@ -3,29 +3,9 @@ package model
 
 import org.virtuslab.yaml.*
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.LocalDate
 import scala.io.Source
 import scala.math.Ordering.Implicits.seqOrdering
-
-private given YamlCodec[LocalDate] = new YamlCodec[LocalDate] {
-  override def construct(node: Node)(implicit settings: LoadSettings): Either[ConstructError, LocalDate] = {
-    node.as[String]
-      .map(LocalDate.parse)
-      .left.map(_.asInstanceOf[ConstructError])
-  }
-
-  override def asNode(ld: LocalDate): Node = Node.ScalarNode(ld.toString)
-}
-
-private given YamlCodec[LocalDateTime] = new YamlCodec[LocalDateTime] {
-  override def construct(node: Node)(implicit settings: LoadSettings): Either[ConstructError, LocalDateTime] = {
-    node.as[String]
-      .map(LocalDateTime.parse)
-      .left.map(_.asInstanceOf[ConstructError])
-  }
-  
-  override def asNode(ldt: LocalDateTime): Node = Node.ScalarNode(ldt.toString)
-}
 
 private given YamlCodec[InviteStatus] = new YamlCodec[InviteStatus] {
   override def construct(node: Node)(implicit settings: LoadSettings): Either[ConstructError, InviteStatus] = {
@@ -37,7 +17,7 @@ private given YamlCodec[InviteStatus] = new YamlCodec[InviteStatus] {
   override def asNode(status: InviteStatus): Node = Node.ScalarNode(status.key)
 }
 
-private case class YamlDetails(
+case class Details(
   underConstruction: Boolean,
   contact: String,
   style: Option[String],
@@ -83,11 +63,6 @@ enum InviteStatus(val key: String) {
 
 case class Invitation(name: String, people: Seq[String], children: InviteStatus) derives YamlCodec
 case class Hotel(name: String, address: String, link: String) derives YamlCodec
-
-val Details = Source.fromResource("details.yaml").getLines().mkString("\n").as[YamlDetails] match {
-  case Left(err) => throw err
-  case Right(details) => details
-}
 
 val Seating = Source.fromResource("seating.yaml").getLines().mkString("\n").as[Map[String, Seq[String]]] match {
   case Left(err) => throw err

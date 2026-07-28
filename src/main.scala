@@ -2,6 +2,8 @@ package net.ivoah.letsgetmarried
 
 import controller.Endpoints
 import org.rogach.scallop.*
+import scala.io.Source
+import org.virtuslab.yaml.*
 import net.ivoah.vial.*
 
 @main
@@ -18,7 +20,12 @@ def main(args: String*): Unit = {
 
   val conf = Conf(args)
   implicit val logger: String => Unit = if (conf.verbose()) println else (msg: String) => ()
-  val endpoints = Endpoints()
+
+  val details = Source.fromResource("details.yaml").getLines().mkString("\n").as[model.Details] match {
+    case Left(err) => throw err
+    case Right(d) => d
+  }
+  val endpoints = Endpoints(details)
   val server = conf.socket.toOption match {
     case Some(path) =>
       println(s"Using unix socket: $path")
