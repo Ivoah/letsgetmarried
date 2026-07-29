@@ -54,7 +54,7 @@ class Templates(details: model.Details, request: Request) {
     if (request.cookies.exists(_.name == "neko")) script(src:="/static/neko.js") else frag(),
     link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
     link(rel:="stylesheet", href:=s"/static/style.css"),
-    details.general.style.map(css => tag("style")(raw(css)))
+    tag("style")(raw(details.general.style))
   )
 
   private def _header(currentPage: String) = header(
@@ -330,7 +330,7 @@ class Templates(details: model.Details, request: Request) {
       ul(
         li(label(input(tpe:="checkbox", name:="underConstruction", if (details.general.underConstruction) checked else frag()), " Under construction")),
         li(label("Contact: ", input(name:="contact", value:=details.general.contact))),
-        li(label("Style", textarea(name:="style", value:=details.general.style.getOrElse("")))),
+        li(label("Style", textarea(name:="style", value:=details.general.style))),
         li("Header images", ul(
           for (img <- details.general.headerImages) yield li(input(tpe:="file", value:=img))
         )),
@@ -422,9 +422,9 @@ class Templates(details: model.Details, request: Request) {
   )).render
 
   def program(): String = {
-    def people(title: String, names: Seq[String]) = div(
+    def people(title: String, names: IterableOnce[String]) = div(
       strong(title), br(),
-      names.map(n => frag(n, br()))
+      names.map(n => frag(n, br())).toSeq
     )
 
     def schedule(schedule: Seq[Seq[String]]) = div(cls:="schedule",
@@ -452,16 +452,16 @@ class Templates(details: model.Details, request: Request) {
                 div(cls:="gridBorder side", css("grid-area"):="w", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
                 div(id:="b4", cls:="border",
                   div(cls:="title", s"The Wedding Ceremony of", br(), s"${details.general.groom} & ${details.general.bride}"),
-                  s"${fullformat.format(details.general.date)} - ${details.home.locations.find(_.name == "Ceremony").get.address.split("\n").head}",
+                  fullformat.format(details.general.date) + details.home.locations.find(_.name == "Ceremony").map(" - " + _.address.split("\n").head).getOrElse(""),
                   schedule(details.program.ceremony),
                   div(cls:="people",
                     div(
-                      people("Matron of Honor", Seq(details.weddingParty.bridesmaids.head.name)),
-                      people("Bridesmaids", details.weddingParty.bridesmaids.tail.map(_.name))
+                      people("Matron of Honor", details.weddingParty.bridesmaids.headOption.map(_.name)),
+                      people("Bridesmaids", details.weddingParty.bridesmaids.drop(1).map(_.name))
                     ),
                     div(
-                      people("Best Man", Seq(details.weddingParty.groomsmen.head.name)),
-                      people("Groomsmen", details.weddingParty.groomsmen.tail.map(_.name))
+                      people("Best Man", details.weddingParty.groomsmen.headOption.map(_.name)),
+                      people("Groomsmen", details.weddingParty.groomsmen.drop(1).map(_.name))
                     ),
                   ),
                   div(cls:="people",
@@ -481,7 +481,7 @@ class Templates(details: model.Details, request: Request) {
         div(id:="back",
           div(
             "Reception",
-            Markdown.render(details.home.locations.find(_.name == "Reception").get.address),
+            details.home.locations.find(_.name == "Reception").map(r => Markdown.render(r.address)),
             schedule(details.program.reception)
           ),
           div(

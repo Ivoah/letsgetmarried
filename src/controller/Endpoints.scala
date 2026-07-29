@@ -97,6 +97,7 @@ class Endpoints(details: model.Details) {
     case ("GET", "/admin/details", r) => Response(view.Templates(details, r).editDetails())
     case ("POST", "/admin/details", r) =>
       println(r.form)
+      println(model.Details.fromForm(r.form))
       Response.Redirect("/admin/details")
     case ("GET", "/admin/rsvps", r) => Response(view.Templates(details, r).rsvps(model.Database.getAllRSVPs()))
     case ("GET", "/admin/gifts", r) => Response(view.Templates(details, r).gifts(model.Database.getAllGifts()))

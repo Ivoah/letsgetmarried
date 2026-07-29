@@ -25,6 +25,9 @@ def main(args: String*): Unit = {
     case Left(err) => throw err
     case Right(d) => d
   }
+
+  // val details = model.Details()
+
   val endpoints = Endpoints(details)
   val server = conf.socket.toOption match {
     case Some(path) =>
