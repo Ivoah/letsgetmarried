@@ -2,6 +2,7 @@ package net.ivoah.letsgetmarried
 package controller
 
 import com.typesafe.config.{Config, ConfigFactory}
+import org.virtuslab.yaml.*
 import net.ivoah.vial.*
 import scalatags.Text.all.*
 
@@ -92,6 +93,8 @@ class Endpoints(details: model.Details) {
           case _ => Cookie(setting, "", maxAge = Some(0))
         })
       }
+
+    case ("GET", "/details.yaml", _) => Response(details.asYaml, Map("Content-Type" -> Seq("application/yaml")))
 
     case ("GET", "/admin", r) => Response(view.Templates(details, r).admin())
     case ("GET", "/admin/details", r) => Response(view.Templates(details, r).editDetails())

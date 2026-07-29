@@ -357,7 +357,8 @@ class Templates(details: model.Details, request: Request) {
           li(label("Title: ", input(name:="storyTitle", value:=details.story.title))),
         )),
       ),
-      input(tpe:="submit", value:="Save")
+      input(tpe:="submit", value:="Save"),
+      input(tpe:="submit", value:="Download yaml")
     )
   )
 
@@ -428,10 +429,7 @@ class Templates(details: model.Details, request: Request) {
     )
 
     def schedule(schedule: Seq[Seq[String]]) = div(cls:="schedule",
-      schedule.map {
-        case Seq(p) => div(span(p))
-        case Seq(p1, p2) => div(span(p1), span(cls:="antline"), span(p2))
-      }
+      schedule.map(line => div(line.map(StringFrag.apply).join(span(cls:="antline"))))
     )
 
     doctype("html")(html(
