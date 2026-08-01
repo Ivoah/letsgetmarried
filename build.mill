@@ -15,7 +15,7 @@ object `package` extends ScalaModule {
     mvn"net.ivoah::vial:0.12.2",
     mvn"net.ivoah::squall:0.0.2",
     mvn"com.lihaoyi::scalatags:0.13.1",
-    mvn"org.virtuslab::scala-yaml:0.3.0",
+    mvn"org.playframework::play-json:3.0.6",
     mvn"org.commonmark:commonmark:0.26.0",
     mvn"org.commonmark:commonmark-ext-gfm-strikethrough:0.19.0",
     mvn"org.xerial:sqlite-jdbc:3.50.3.0",

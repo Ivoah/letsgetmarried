@@ -357,8 +357,10 @@ class Templates(details: model.Details, request: Request) {
           li(label("Title: ", input(name:="storyTitle", value:=details.story.title))),
         )),
       ),
-      input(tpe:="submit", value:="Save"),
-      input(tpe:="submit", value:="Download yaml")
+      div(display:="flex", style:="gap: 10px",
+        input(tpe:="submit", value:="Save"),
+        input(tpe:="submit", value:="Download json", attr("formmethod"):="GET", attr("formaction"):="/details.json")
+      )
     )
   )
 
@@ -491,29 +493,29 @@ class Templates(details: model.Details, request: Request) {
     )).render
   }
 
-  def seating(): String = {
-    doctype("html")(html(
-      head(
-        link(rel:="stylesheet", href:=s"/static/style.css"),
-        link(rel:="stylesheet", href:=s"/static/seating.css"),
-        link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
-        title("Seating labels")
-      ),
-      body(
-        for (page <- model.Seating.grouped(3).grouped(10).toSeq) yield div(cls:="page",
-          for (row <- page) yield div(cls:="row",
-            for ((name, table) <- row) yield {
-              val card = table.dropRight(1)
-              val suit = table.takeRight(1)
-              div(cls:="label",
-                span(name), span(cls:="table", card, span(cls:=suit, suit))
-              )
-            }
-          )
-        )
-      )
-    )).render
-  }
+//   def seating(): String = {
+//     doctype("html")(html(
+//       head(
+//         link(rel:="stylesheet", href:=s"/static/style.css"),
+//         link(rel:="stylesheet", href:=s"/static/seating.css"),
+//         link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
+//         title("Seating labels")
+//       ),
+//       body(
+//         for (page <- model.Seating.grouped(3).grouped(10).toSeq) yield div(cls:="page",
+//           for (row <- page) yield div(cls:="row",
+//             for ((name, table) <- row) yield {
+//               val card = table.dropRight(1)
+//               val suit = table.takeRight(1)
+//               div(cls:="label",
+//                 span(name), span(cls:="table", card, span(cls:=suit, suit))
+//               )
+//             }
+//           )
+//         )
+//       )
+//     )).render
+//   }
 }
 
 object Templates {

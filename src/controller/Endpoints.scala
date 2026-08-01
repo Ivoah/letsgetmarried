@@ -1,8 +1,10 @@
 package net.ivoah.letsgetmarried
 package controller
 
+import model.detailsFormat
+
 import com.typesafe.config.{Config, ConfigFactory}
-import org.virtuslab.yaml.*
+import play.api.libs.json.*
 import net.ivoah.vial.*
 import scalatags.Text.all.*
 
@@ -94,7 +96,7 @@ class Endpoints(details: model.Details) {
         })
       }
 
-    case ("GET", "/details.yaml", _) => Response(details.asYaml, Map("Content-Type" -> Seq("application/yaml")))
+    case ("GET", "/details.json", _) => Response(Json.stringify(Json.toJson(details)), Map("Content-Type" -> Seq("application/json")))
 
     case ("GET", "/admin", r) => Response(view.Templates(details, r).admin())
     case ("GET", "/admin/details", r) => Response(view.Templates(details, r).editDetails())
@@ -107,7 +109,7 @@ class Endpoints(details: model.Details) {
 
     case ("GET", "/invitation", r) => Response(view.Templates(details, r).invitation())
     case ("GET", "/program", r) => Response(view.Templates(details, r).program())
-    case ("GET", "/seating", r) => Response(view.Templates(details, r).seating())
+    // case ("GET", "/seating", r) => Response(view.Templates(details, r).seating())
     // case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
     case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file))
     case ("GET", s"/photos/$file", _) => Response.forFile(Paths.get("photos"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))

@@ -1,13 +1,14 @@
 package net.ivoah.letsgetmarried
 package model
 
-import org.virtuslab.yaml.*
+import play.api.libs.json.*
 
 import java.time.{LocalDate, LocalDateTime}
 import java.io.File
 import scala.io.Source
 import scala.math.Ordering.Implicits.seqOrdering
 
+given detailsFormat: Format[Details] = Json.format[Details]
 case class Details(
   general: Details.General = Details.General(),
   home: Details.Home = Details.Home(),
@@ -20,9 +21,10 @@ case class Details(
 
   invitation: Details.Invitation = Details.Invitation(),
   program: Details.Program = Details.Program()
-) derives YamlCodec
+)
 
 object Details {
+  given Format[General] = Json.format[General]
   case class General(
     underConstruction: Boolean = true,
     contact: String = "nobody",
@@ -32,50 +34,65 @@ object Details {
     bride: String = "Bride name",
     date: LocalDateTime = LocalDateTime.now().plusMonths(1),
     location: String = "Nowhere"
-  ) derives YamlCodec
+  )
 
-  case class Home(image: String = "", locations: Seq[Home.Location] = Seq()) derives YamlCodec
+  given Format[Home] = Json.format[Home]
+  case class Home(image: String = "", locations: Seq[Home.Location] = Seq())
   object Home {
-    case class Location(name: String, time: String, address: String, link: String, details: String) derives YamlCodec
+    given Format[Location] = Json.format[Location]
+    case class Location(name: String, time: String, address: String, link: String, details: String)
   }
 
-  case class Story(title: String = "Our Story", image: String = "", body: String = "We met and falled in love.") derives YamlCodec
+  given Format[Story] = Json.format[Story]
+  case class Story(title: String = "Our Story", image: String = "", body: String = "We met and falled in love.")
   
-  case class WeddingParty(bridesmaids: Seq[WeddingParty.PartyMember] = Seq(), groomsmen: Seq[WeddingParty.PartyMember] = Seq()) derives YamlCodec
+  given Format[WeddingParty] = Json.format[WeddingParty]
+  case class WeddingParty(bridesmaids: Seq[WeddingParty.PartyMember] = Seq(), groomsmen: Seq[WeddingParty.PartyMember] = Seq())
   object WeddingParty {
-    case class PartyMember(name: String, role: String, image: String, bio: String) derives YamlCodec
+    given Format[PartyMember] = Json.format[PartyMember]
+    case class PartyMember(name: String, role: String, image: String, bio: String)
   }
   
-  case class Photos(photos: Seq[Photos.Photo] = Seq()) derives YamlCodec
+  given Format[Photos] = Json.format[Photos]
+  case class Photos(photos: Seq[Photos.Photo] = Seq())
   object Photos {
-    case class Photo(image: String, caption: Option[String]) derives YamlCodec
+    given Format[Photo] = Json.format[Photo]
+    case class Photo(image: String, caption: Option[String])
   }
   
-  case class Registry(address: String = "", notes: String = "", items: Seq[Registry.Item] = Seq()) derives YamlCodec {
+  given Format[Registry] = Json.format[Registry]
+  case class Registry(address: String = "", notes: String = "", items: Seq[Registry.Item] = Seq()) {
     require(items.distinctBy(_.id).length == items.length, "Duplicate id in registry list")
   }
   object Registry {
-    case class Item(name: String, id: String, link: String, image: String, price: Option[Double]) derives YamlCodec
+    given Format[Item] = Json.format[Item]
+    case class Item(name: String, id: String, link: String, image: String, price: Option[Double])
   }
   
-  case class RSVP(notes: String = "", invitations: Seq[RSVP.Invitation] = Seq()) derives YamlCodec
+  given Format[RSVP] = Json.format[RSVP]
+  case class RSVP(notes: String = "", invitations: Seq[RSVP.Invitation] = Seq())
   object RSVP {
-    case class Invitation(name: String, people: Seq[String], childrenInvited: Option[Boolean]) derives YamlCodec
+    given Format[Invitation] = Json.format[Invitation]
+    case class Invitation(name: String, people: Seq[String], childrenInvited: Option[Boolean])
   }
   
-  case class Hotels(notes: String = "", hotels: Seq[Hotels.Hotel] = Seq()) derives YamlCodec
+  given Format[Hotels] = Json.format[Hotels]
+  case class Hotels(notes: String = "", hotels: Seq[Hotels.Hotel] = Seq())
   object Hotels {
-    case class Hotel(name: String, address: String, link: String) derives YamlCodec
+    given Format[Hotel] = Json.format[Hotel]
+    case class Hotel(name: String, address: String, link: String)
   }
 
+  given Format[Invitation] = Json.format[Invitation]
   case class Invitation(
     tagline: String = "Love endures all things",
     parents: String = "Father and mother of the bride",
     details: String = "It's a wedding, come to it",
     url: String = "https://example.com",
     deadline: LocalDate = LocalDate.now().plusWeeks(1)
-  ) derives YamlCodec
+  )
   
+  given Format[Program] = Json.format[Program]
   case class Program(
     ceremony: Seq[Seq[String]] = Seq(),
     pastors: Seq[String] = Seq(),
@@ -85,18 +102,18 @@ object Details {
     ringBearer: String = "ring bearer",
     reception: Seq[Seq[String]] = Seq(),
     thanks: String = ""
-  ) derives YamlCodec
+  )
 
   def fromForm(form: Map[String, String | File]): Details = {
     Details()
   }
 }
 
-val Seating = Source.fromResource("seating.yaml").getLines().mkString("\n").as[Map[String, Seq[String]]] match {
-  case Left(err) => throw err
-  case Right(seating) =>
-    val s = seating.toSeq
-      .flatMap { case (k, vv) => vv.map(v => v -> k) }
-      .sortBy(_._1.split("\\s+").reverse.toSeq)
-    s ++ Seq.fill(30 - s.length % 30)("" -> "")
-}
+// val Seating = Source.fromResource("seating.yaml").getLines().mkString("\n").as[Map[String, Seq[String]]] match {
+//   case Left(err) => throw err
+//   case Right(seating) =>
+//     val s = seating.toSeq
+//       .flatMap { case (k, vv) => vv.map(v => v -> k) }
+//       .sortBy(_._1.split("\\s+").reverse.toSeq)
+//     s ++ Seq.fill(30 - s.length % 30)("" -> "")
+// }
