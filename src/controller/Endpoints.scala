@@ -1,7 +1,7 @@
 package net.ivoah.letsgetmarried
 package controller
 
-import model.detailsFormat
+import model.given
 
 import com.typesafe.config.{Config, ConfigFactory}
 import play.api.libs.json.*

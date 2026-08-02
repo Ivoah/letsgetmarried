@@ -9,6 +9,7 @@ photos/
 originals/
 application.conf
 details.yaml
+details.json
 seating.yaml
 database.db
 static/neko.js

@@ -1,6 +1,6 @@
 package net.ivoah.letsgetmarried
 
-import model.detailsFormat
+import model.given
 
 import controller.Endpoints
 import org.rogach.scallop.*

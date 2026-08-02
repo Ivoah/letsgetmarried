@@ -1,6 +1,8 @@
 package net.ivoah.letsgetmarried
 package view
 
+import model.given
+
 import scala.util.Random
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -54,7 +56,7 @@ class Templates(details: model.Details, request: Request) {
     if (request.cookies.exists(_.name == "neko")) script(src:="/static/neko.js") else frag(),
     link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
     link(rel:="stylesheet", href:=s"/static/style.css"),
-    tag("style")(raw(details.general.style))
+    tag("style")(raw(details.general.style.code))
   )
 
   private def _header(currentPage: String) = header(
@@ -327,39 +329,10 @@ class Templates(details: model.Details, request: Request) {
 
   def editDetails() = page("Edit details")(
     form(method:="POST",
-      ul(
-        li(label(input(tpe:="checkbox", name:="underConstruction", if (details.general.underConstruction) checked else frag()), " Under construction")),
-        li(label("Contact: ", input(name:="contact", value:=details.general.contact))),
-        li(label("Style", textarea(name:="style", value:=details.general.style))),
-        li("Header images", ul(
-          for (img <- details.general.headerImages) yield li(input(tpe:="file", value:=img))
-        )),
-        li(label("Groom: ", input(name:="groom", value:=details.general.groom))),
-        li(label("Bride: ", input(name:="bride", value:=details.general.bride))),
-        li(label("Date: ", input(tpe:="date", name:="date", value:=details.general.date.toString))),
-        li(label("Location: ", input(name:="location", value:=details.general.location))),
-        li("Home tab", ul(
-          li(label("Hero image: ", input(tpe:="file", name:="hero"))),
-          li("Locations", ul(
-            for ((location, i) <- details.home.locations.zipWithIndex) yield fieldset(
-              legend(s"Location ${i + 1}"),
-              ul(
-                li(label("Name: ", input(name:="locationName", value:=location.name))),
-                li(label("Time: ", input(name:="locationTime", value:=location.time))),
-                li(label("Address: ", textarea(name:="locationAddress", value:=location.address))),
-                li(label("Link: ", input(name:="locationLink", value:=location.link))),
-                li(label("Details: ", input(name:="locationDetails", value:=location.details))),
-              )
-            )
-          ))
-        )),
-        li("Story tab", ul(
-          li(label("Title: ", input(name:="storyTitle", value:=details.story.title))),
-        )),
-      ),
+      FormBuilder.createForm(details),
       div(display:="flex", style:="gap: 10px",
-        input(tpe:="submit", value:="Save"),
-        input(tpe:="submit", value:="Download json", attr("formmethod"):="GET", attr("formaction"):="/details.json")
+        input(`type`:="submit", value:="Save"),
+        a(cls:="button", href:="/details.json", "Download json")
       )
     )
   )
