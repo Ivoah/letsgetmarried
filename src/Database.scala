@@ -1,5 +1,4 @@
 package net.ivoah.letsgetmarried
-package model
 
 import net.ivoah.squall.*
 import play.api.libs.json.*

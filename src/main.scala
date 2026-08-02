@@ -1,8 +1,5 @@
 package net.ivoah.letsgetmarried
 
-import model.given
-
-import controller.Endpoints
 import org.rogach.scallop.*
 import scala.io.Source
 import net.ivoah.vial.*
@@ -23,9 +20,9 @@ def main(args: String*): Unit = {
   val conf = Conf(args)
   implicit val logger: String => Unit = if (conf.verbose()) println else (msg: String) => ()
 
-  val details = Json.parse(Source.fromResource("details.json").getLines().mkString("\n")).as[model.Details]
+  val details = Json.parse(Source.fromResource("details.json").getLines().mkString("\n")).as[Details]
 
-  // val details = model.Database.getDetails()
+  // val details = Database.getDetails()
 
   val endpoints = Endpoints(details)
   val server = conf.socket.toOption match {

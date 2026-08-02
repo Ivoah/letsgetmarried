@@ -1,5 +1,4 @@
 package net.ivoah.letsgetmarried
-package view
 
 import java.time.{LocalDate, LocalDateTime}
 import java.io.File

@@ -1,7 +1,4 @@
 package net.ivoah.letsgetmarried
-package view
-
-import model.given
 
 import scala.util.Random
 import java.time.LocalDate
@@ -22,7 +19,7 @@ extension (s: String) {
   })
 }
 
-class Templates(details: model.Details, request: Request) {
+class Templates(details: Details, request: Request) {
   given Conversion[String, StringFrag] = (s: String) => StringFrag(
     if (request.cookies.exists(_.name == "scramble")) s.scramble
     else s
@@ -130,7 +127,7 @@ class Templates(details: model.Details, request: Request) {
 
 
   def party(): String = {
-    def partyMember(member: model.Details.WeddingParty.PartyMember) = div(
+    def partyMember(member: Details.WeddingParty.PartyMember) = div(
       div(
         h3(member.name, br(), member.role),
         img(src:=member.image),
@@ -160,7 +157,7 @@ class Templates(details: model.Details, request: Request) {
     ))
   )
 
-  def registry(items: Seq[(model.Details.Registry.Item, Boolean)], sortBy: String): String = page("Registry")(
+  def registry(items: Seq[(Details.Registry.Item, Boolean)], sortBy: String): String = page("Registry")(
     fieldset(
       legend("Please send all gifts to:"),
       div(cls:="centered", div(cls:="pre-wrap", details.registry.address))
@@ -244,7 +241,7 @@ class Templates(details: model.Details, request: Request) {
     )
   )
 
-  def rsvpFound(invitation: model.Details.RSVP.Invitation, rsvp: Option[model.RSVP]): String = page("RSVP", Some(s"RSVP for ${invitation.name}"))(
+  def rsvpFound(invitation: Details.RSVP.Invitation, rsvp: Option[RSVP]): String = page("RSVP", Some(s"RSVP for ${invitation.name}"))(
     form(action:="/rsvp", method:="POST",
       fieldset(
         legend(s"RSVP for ${invitation.name}"),
@@ -283,7 +280,7 @@ class Templates(details: model.Details, request: Request) {
     )
   )
 
-  def rsvps(rsvps: Seq[model.RSVP]): String = page("RSVPs")(
+  def rsvps(rsvps: Seq[RSVP]): String = page("RSVPs")(
     p(
       s"Adults: ${rsvps.map(_.people.length).sum}", br(),
       s"Children: ${rsvps.map(_.children).sum}", br(),
@@ -311,7 +308,7 @@ class Templates(details: model.Details, request: Request) {
     }
   )
   
-  def gifts(allGifts: Seq[model.Gift]): String = page("Gifts")(
+  def gifts(allGifts: Seq[Gift]): String = page("Gifts")(
     p(s"Total: ${allGifts.length}"),
     for ((giver, gifts) <- allGifts.groupBy(_.purchasedBy).toSeq) yield {
       tag("details")(
@@ -475,7 +472,7 @@ class Templates(details: model.Details, request: Request) {
 //         title("Seating labels")
 //       ),
 //       body(
-//         for (page <- model.Seating.grouped(3).grouped(10).toSeq) yield div(cls:="page",
+//         for (page <- Seating.grouped(3).grouped(10).toSeq) yield div(cls:="page",
 //           for (row <- page) yield div(cls:="row",
 //             for ((name, table) <- row) yield {
 //               val card = table.dropRight(1)

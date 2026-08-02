@@ -1,5 +1,4 @@
 package net.ivoah.letsgetmarried
-package model
 
 import scalatags.Text.all.*
 import java.sql.ResultSet
