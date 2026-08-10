@@ -33,7 +33,7 @@ case class Details(
   invitation: Details.Invitation = Details.Invitation(),
   program: Details.Program = Details.Program()
 )
-given detailsFormat: Format[Details] = Json.format[Details]
+given Format[Details] = Json.format
 given FormBuilder[Details] {
   def createForm(d: Details): Frag = ul(
     li("General: ", FormBuilder.createForm(d.general)),
@@ -60,7 +60,7 @@ object Details {
     date: LocalDateTime = LocalDateTime.now().plusMonths(1),
     location: String = "Nowhere"
   )
-  given Format[General] = Json.format[General]
+  given Format[General] = Json.format
   given FormBuilder[General] {
     def createForm(g: General): Frag = ul(
       li("Under construction: ", FormBuilder.createForm(g.underConstruction)),
@@ -77,7 +77,7 @@ object Details {
   case class Home(image: String = "", locations: Seq[Home.Location] = Seq())
   object Home {
     case class Location(name: String, time: String, address: String, link: String, details: String)
-    given Format[Location] = Json.format[Location]
+    given Format[Location] = Json.format
     given FormBuilder[Location] {
       def createForm(l: Location): Frag = ul(
         li("Name: ", FormBuilder.createForm(l.name)),
@@ -88,7 +88,7 @@ object Details {
       )
     }
   }
-  given Format[Home] = Json.format[Home]
+  given Format[Home] = Json.format
   given FormBuilder[Home] {
     def createForm(h: Home): Frag = ul(
       li("Image: ", FormBuilder.createForm(h.image)),
@@ -97,7 +97,7 @@ object Details {
   }
 
   case class Story(title: String = "Our Story", image: String = "", body: String = "We met and falled in love.")
-  given Format[Story] = Json.format[Story]
+  given Format[Story] = Json.format
   given FormBuilder[Story] {
     def createForm(s: Story): Frag = ul(
       li("Title: ", FormBuilder.createForm(s.title)),
@@ -109,7 +109,7 @@ object Details {
   case class WeddingParty(bridesmaids: Seq[WeddingParty.PartyMember] = Seq(), groomsmen: Seq[WeddingParty.PartyMember] = Seq())
   object WeddingParty {
     case class PartyMember(name: String, role: String, image: String, bio: String)
-    given Format[PartyMember] = Json.format[PartyMember]
+    given Format[PartyMember] = Json.format
     given FormBuilder[PartyMember] {
       def createForm(pm: PartyMember): Frag = ul(
         li("Name: ", FormBuilder.createForm(pm.name)),
@@ -119,7 +119,7 @@ object Details {
       )
     }
   }
-  given Format[WeddingParty] = Json.format[WeddingParty]
+  given Format[WeddingParty] = Json.format
   given FormBuilder[WeddingParty] {
     def createForm(wp: WeddingParty): Frag = ul(
       li("Bridesmaids: ", FormBuilder.createForm(wp.bridesmaids)),
@@ -130,7 +130,7 @@ object Details {
   case class Photos(photos: Seq[Photos.Photo] = Seq())
   object Photos {
     case class Photo(image: String, caption: Option[String])
-    given Format[Photo] = Json.format[Photo]
+    given Format[Photo] = Json.format
     given FormBuilder[Photo] {
       def createForm(p: Photo): Frag = ul(
         li("Image: ", FormBuilder.createForm(p.image)),
@@ -138,7 +138,7 @@ object Details {
       )
     }
   }
-  given Format[Photos] = Json.format[Photos]
+  given Format[Photos] = Json.format
   given FormBuilder[Photos] {
     def createForm(p: Photos): Frag = ul(
       li("Photos: ", FormBuilder.createForm(p.photos))
@@ -150,7 +150,7 @@ object Details {
   }
   object Registry {
     case class Item(name: String, id: String, link: String, image: String, price: Option[Double])
-    given Format[Item] = Json.format[Item]
+    given Format[Item] = Json.format
     given FormBuilder[Item] {
       def createForm(i: Item): Frag = ul(
         li("Name: ", FormBuilder.createForm(i.name)),
@@ -161,7 +161,7 @@ object Details {
       )
     }
   }
-  given Format[Registry] = Json.format[Registry]
+  given Format[Registry] = Json.format
   given FormBuilder[Registry] {
     def createForm(r: Registry): Frag = ul(
       li("Address: ", FormBuilder.createForm(r.address)),
@@ -173,7 +173,7 @@ object Details {
   case class RSVP(notes: String = "", invitations: Seq[RSVP.Invitation] = Seq())
   object RSVP {
     case class Invitation(name: String, people: Seq[String], childrenInvited: Option[Boolean])
-    given Format[Invitation] = Json.format[Invitation]
+    given Format[Invitation] = Json.format
     given FormBuilder[Invitation] {
       def createForm(i: Invitation): Frag = ul(
         li("Name: ", FormBuilder.createForm(i.name)),
@@ -182,7 +182,7 @@ object Details {
       )
     }
   }
-  given Format[RSVP] = Json.format[RSVP]
+  given Format[RSVP] = Json.format
   given FormBuilder[RSVP] {
     def createForm(r: RSVP): Frag = ul(
       li("Notes: ", FormBuilder.createForm(r.notes)),
@@ -193,7 +193,7 @@ object Details {
   case class Hotels(notes: String = "", hotels: Seq[Hotels.Hotel] = Seq())
   object Hotels {
     case class Hotel(name: String, address: String, link: String)
-    given Format[Hotel] = Json.format[Hotel]
+    given Format[Hotel] = Json.format
     given FormBuilder[Hotel] {
       def createForm(h: Hotel): Frag = ul(
         li("Name: ", FormBuilder.createForm(h.name)),
@@ -202,7 +202,7 @@ object Details {
       )
     }
   }
-  given Format[Hotels] = Json.format[Hotels]
+  given Format[Hotels] = Json.format
   given FormBuilder[Hotels] {
     def createForm(h: Hotels): Frag = ul(
       li("Notes: ", FormBuilder.createForm(h.notes)),
@@ -217,7 +217,7 @@ object Details {
     url: String = "https://example.com",
     deadline: LocalDate = LocalDate.now().plusWeeks(1)
   )
-  given Format[Invitation] = Json.format[Invitation]
+  given Format[Invitation] = Json.format
   given FormBuilder[Invitation] {
     def createForm(i: Invitation): Frag = ul(
       li("Tagline: ", FormBuilder.createForm(i.tagline)),
@@ -238,7 +238,7 @@ object Details {
     reception: Seq[Seq[String]] = Seq(),
     thanks: String = ""
   )
-  given Format[Program] = Json.format[Program]
+  given Format[Program] = Json.format
   given FormBuilder[Program] {
     def createForm(p: Program): Frag = ul(
       li("Ceremony: ", FormBuilder.createForm(p.ceremony)),
@@ -250,10 +250,6 @@ object Details {
       li("Reception: ", FormBuilder.createForm(p.reception)),
       li("Thanks: ", FormBuilder.createForm(p.thanks))
     )
-  }
-
-  def fromForm(form: Map[String, String | File]): Details = {
-    Details()
   }
 }
 

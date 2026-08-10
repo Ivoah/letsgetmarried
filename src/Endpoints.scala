@@ -7,7 +7,8 @@ import scalatags.Text.all.*
 
 import java.nio.file.Paths
 import java.time.LocalDate
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
+import scala.util.Failure
 
 class Endpoints(details: Details) {
   given Config = ConfigFactory.load()
@@ -98,9 +99,13 @@ class Endpoints(details: Details) {
     case ("GET", "/admin", r) => Response(Templates(details, r).admin())
     case ("GET", "/admin/details", r) => Response(Templates(details, r).editDetails())
     case ("POST", "/admin/details", r) =>
-      println(r.form)
-      println(Details.fromForm(r.form))
-      Response.Redirect("/admin/details")
+      Try(Json.parse(r.body).as[Details]) match {
+        case Success(newDetails) =>
+          println(newDetails)
+          Response.Redirect("/admin/details")
+        case Failure(exception) => Response.BadRequest(exception.getMessage())
+      }
+      
     case ("GET", "/admin/rsvps", r) => Response(Templates(details, r).rsvps(Database.getAllRSVPs()))
     case ("GET", "/admin/gifts", r) => Response(Templates(details, r).gifts(Database.getAllGifts()))
 
