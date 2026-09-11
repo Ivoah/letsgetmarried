@@ -274,7 +274,7 @@ class Templates(details: Details, request: Request) {
 
   def admin(): String = page("Admin")(
     ul(
-      li(a(href:="/admin/details", "Edit detials")),
+      li(a(href:="/admin/details", "Edit details")),
       li(a(href:="/admin/rsvps", "RSVPs")),
       li(a(href:="/admin/gifts", "Gifts"))
     )
