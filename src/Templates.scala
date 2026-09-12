@@ -76,6 +76,7 @@ class Templates(details: Details, request: Request) {
     h1(cls:="underline", s"${details.general.groom.head}&${details.general.bride.head}"),
     shortformat.format(details.general.date),
     p("Created from scratch"),
+    p(a(href:="/admin", "Admin page")),
     p("Getting married? ", a(href:="https://github.com/ivoah/letsgetmarried", "Create your wedding website for free.")),
     p("up-up-down-down-left-right-left-right-b-a")
   )
