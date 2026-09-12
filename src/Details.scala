@@ -16,9 +16,19 @@ given Format[Code] {
   }
   def writes(c: Code): JsValue = JsString(c.code)
 }
-given FormBuilder[Code] = c => textarea(c.map(_.code))
+given FormBuilder[Code] = (c, n) => textarea(name:=n, c.map(_.code))
+given FormParser[Code] = (f, n) => Code(f(n))
 
-type Image = String
+case class Image(path: String)
+given Format[Image] {
+	def reads(v: JsValue): JsResult[Image] = v match {
+		case JsString(str) => JsSuccess(Image(str))
+		case _ => JsError()
+	}
+	def writes(i: Image): JsValue = JsString(i.path)
+}
+given FormBuilder[Image] = (i, n) => input(name:=n, i.map(value:=_.path))
+given FormParser[Image]  = (f, n) => Image(f(n))
 
 case class Details(
   general: Details.General = Details.General(),
@@ -32,7 +42,7 @@ case class Details(
 
   invitation: Details.Invitation = Details.Invitation(),
   program: Details.Program = Details.Program()
-) derives Format, FormBuilder
+) derives Format, FormBuilder, FormParser
 
 object Details {
   case class General(
@@ -44,40 +54,40 @@ object Details {
     bride: String = "Bride name",
     date: LocalDateTime = LocalDateTime.now().plusMonths(1),
     location: String = "Nowhere"
-  ) derives Format, FormBuilder
+  ) derives Format, FormBuilder, FormParser
 
-  case class Home(image: Image = "", locations: Seq[Home.Location] = Seq()) derives Format, FormBuilder
+  case class Home(image: Image = Image(""), locations: Seq[Home.Location] = Seq()) derives Format, FormBuilder, FormParser
   object Home {
-    case class Location(name: String, time: String, address: String, link: String, details: String) derives Format, FormBuilder
+    case class Location(name: String, time: String, address: String, link: String, details: String) derives Format, FormBuilder, FormParser
   }
 
-  case class Story(title: String = "Our Story", image: Image = "", body: String = "We met and falled in love.") derives Format, FormBuilder
+  case class Story(title: String = "Our Story", image: Image = Image(""), body: String = "We met and falled in love.") derives Format, FormBuilder, FormParser
   
-  case class WeddingParty(bridesmaids: Seq[WeddingParty.PartyMember] = Seq(), groomsmen: Seq[WeddingParty.PartyMember] = Seq()) derives Format, FormBuilder
+  case class WeddingParty(bridesmaids: Seq[WeddingParty.PartyMember] = Seq(), groomsmen: Seq[WeddingParty.PartyMember] = Seq()) derives Format, FormBuilder, FormParser
   object WeddingParty {
-    case class PartyMember(name: String, role: String, image: Image, bio: String) derives Format, FormBuilder
+    case class PartyMember(name: String, role: String, image: Image, bio: String) derives Format, FormBuilder, FormParser
   }
   
-  case class Photos(photos: Seq[Photos.Photo] = Seq()) derives Format, FormBuilder
+  case class Photos(photos: Seq[Photos.Photo] = Seq()) derives Format, FormBuilder, FormParser
   object Photos {
-    case class Photo(image: Image, caption: Option[String]) derives Format, FormBuilder
+    case class Photo(image: Image, caption: Option[String]) derives Format, FormBuilder, FormParser
   }
   
-  case class Registry(address: String = "", notes: String = "", items: Seq[Registry.Item] = Seq()) derives Format, FormBuilder {
+  case class Registry(address: String = "", notes: String = "", items: Seq[Registry.Item] = Seq()) derives Format, FormBuilder, FormParser {
     require(items.distinctBy(_.id).length == items.length, "Duplicate id in registry list")
   }
   object Registry {
-    case class Item(name: String, id: String, link: String, image: Image, price: Option[Double]) derives Format, FormBuilder
+    case class Item(name: String, id: String, link: String, image: Image, price: Option[Double]) derives Format, FormBuilder, FormParser
   }
   
-  case class RSVP(notes: String = "", invitations: Seq[RSVP.Invitation] = Seq()) derives Format, FormBuilder
+  case class RSVP(notes: String = "", invitations: Seq[RSVP.Invitation] = Seq()) derives Format, FormBuilder, FormParser
   object RSVP {
-    case class Invitation(name: String, people: Seq[String], childrenInvited: Option[Boolean]) derives Format, FormBuilder
+    case class Invitation(name: String, people: Seq[String], childrenInvited: Option[Boolean]) derives Format, FormBuilder, FormParser
   }
   
-  case class Hotels(notes: String = "", hotels: Seq[Hotels.Hotel] = Seq()) derives Format, FormBuilder
+  case class Hotels(notes: String = "", hotels: Seq[Hotels.Hotel] = Seq()) derives Format, FormBuilder, FormParser
   object Hotels {
-    case class Hotel(name: String, address: String, link: String) derives Format, FormBuilder
+    case class Hotel(name: String, address: String, link: String) derives Format, FormBuilder, FormParser
   }
 
   case class Invitation(
@@ -86,7 +96,7 @@ object Details {
     details: String = "It's a wedding, come to it",
     url: String = "https://example.com",
     deadline: LocalDate = LocalDate.now().plusWeeks(1)
-  ) derives Format, FormBuilder
+  ) derives Format, FormBuilder, FormParser
   
   case class Program(
     ceremony: Seq[Seq[String]] = Seq(),
@@ -97,7 +107,7 @@ object Details {
     ringBearer: String = "ring bearer",
     reception: Seq[Seq[String]] = Seq(),
     thanks: String = ""
-  ) derives Format, FormBuilder
+  ) derives Format, FormBuilder, FormParser
 }
 
 // val Seating = Source.fromResource("seating.yaml").getLines().mkString("\n").as[Map[String, Seq[String]]] match {

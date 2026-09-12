@@ -99,7 +99,7 @@ class Endpoints(details: Details) {
     case ("GET", "/admin", r) => Response(Templates(details, r).admin())
     case ("GET", "/admin/details", r) => Response(Templates(details, r).editDetails())
     case ("POST", "/admin/details", r) =>
-      Try(Json.parse(r.body).as[Details]) match {
+      Try(FormParser.parseForm[Details](r.form.asInstanceOf[Map[String, String]], "details")) match {
         case Success(newDetails) =>
           println(newDetails)
           Response.Redirect("/admin/details")
