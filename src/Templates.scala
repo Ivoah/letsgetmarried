@@ -57,7 +57,7 @@ class Templates(details: Details, request: Request) {
   )
 
   private def _header(currentPage: String) = header(
-    p(cls:="headerImages", details.general.headerImages.map(i => img(src:=i.path))),
+    p(cls:="headerImages", details.general.headerImages),
     if (details.general.underConstruction) h3("Website under construction - information subject to change") else frag(),
     h1(s"${details.general.groom.split(" ").head} & ${details.general.bride.split(" ").head}"),
     h3(s"${fullformat.format(details.general.date)} • ${details.general.location}"),
@@ -103,10 +103,10 @@ class Templates(details: Details, request: Request) {
     )
   )).render
 
-  def message(tab: String, msg: String): String = page(tab)(div(cls:="centered", Markdown.render(msg)))
+  def message(tab: String, msg: String): String = page(tab)(div(cls:="centered", Markdown(msg)))
 
   def home(): String = page("Home")(
-    img(src:=details.home.image.path),
+    details.home.image,
     h2(s"The wedding of ${details.general.groom} & ${details.general.bride}"),
     h3(fullformat.format(details.general.date)),
     for (location <- details.home.locations) yield div(cls:="location",
@@ -114,23 +114,23 @@ class Templates(details: Details, request: Request) {
       div(
         h3(location.name),
         a(href:=location.link, div(cls:="pre-wrap", location.address)),
-        Markdown.render(location.details)
+        location.details
       )
     )
   )
 
   def story(): String = page("Our Story")(
     h2(details.story.title),
-    img(src:=details.story.image.path),
-    div(cls:="markdown", Markdown.render(details.story.body))
+    details.story.image,
+    div(cls:="markdown", details.story.body)
   )
 
   def party(): String = {
     def partyMember(member: Details.WeddingParty.PartyMember) = div(
       div(
         h3(member.name, br(), member.role),
-        img(src:=member.image.path),
-        div(cls:="markdown", Markdown.render(member.bio))
+        member.image,
+        div(cls:="markdown", member.bio)
       )
     )
 
@@ -145,8 +145,8 @@ class Templates(details: Details, request: Request) {
   def photos(): String = page("Photos")(
     details.photos.photos.map { p =>
       figure(css("transform"):=s"rotate(${Random.between(-15.0, 15.0)}deg)",
-        img(src:=p.image.path),
-        div(figcaption(p.caption.map(Markdown.render(_))), a(href:=p.image.path, download:="", img(src:="/static/download.svg")))
+        p.image,
+        div(figcaption(p.caption), a(href:=p.image.path, download:="", img(src:="/static/download.svg")))
       )
     },
     script(raw(
@@ -161,7 +161,7 @@ class Templates(details: Details, request: Request) {
       legend("Please send all gifts to:"),
       div(cls:="centered", div(cls:="pre-wrap", details.registry.address))
     ),
-    Markdown.render(details.registry.notes),
+    details.registry.notes,
     if (details.registry.items.isEmpty) frag()
     else frag(
       divider,
@@ -181,7 +181,7 @@ class Templates(details: Details, request: Request) {
           frag(
             div(cls:="hoverGlow", onclick:=openDialog(item.id),
               div(cls:=(if (purchased) "disabled" else ""),
-                img(src:=item.image.path),
+                item.image,
                 div(cls:="details",
                   span(item.name),
                   span(item.price.map(p => f"$$$p%.2f").getOrElse("$∞"))
@@ -193,7 +193,7 @@ class Templates(details: Details, request: Request) {
               input(`type`:="image", onclick:=closeDialog(item.id), src:="/static/close.svg"),
               div(
                 p(item.name, item.price.map(p => f" - $$$p%.2f").getOrElse("")),
-                img(src:=item.image.path),
+                item.image,
                 if (!purchased) a(cls:="button", href:=item.link, target:="_blank", s"Purchase at ${URI(item.link).getHost.split("\\.").takeRight(2).mkString(".")}") else frag(),
                 input(`type`:="submit", value:=(if (purchased) "Unmark as given" else "Mark as given"), onclick:=openDialog(s"${item.id}-purchase")),
                 dialog(id:=s"${item.id}-purchase", div(
@@ -228,7 +228,7 @@ class Templates(details: Details, request: Request) {
   )
 
   def rsvp(): String = page("RSVP")(
-    Markdown.render(details.rsvp.notes),
+    details.rsvp.notes,
     if (details.rsvp.invitations.isEmpty) frag()
     else form(action:="/rsvp", method:="GET",
       input(
@@ -264,11 +264,12 @@ class Templates(details: Details, request: Request) {
   )
 
   def hotels(): String = page("Hotels")(
-    Markdown.render(details.hotels.notes),
+    details.hotels.notes,
     divider,
-    details.hotels.hotels.map { hotel =>
-      Markdown.render(s"${hotel.name}  \n[${hotel.address}](${hotel.link})")
-    }
+    details.hotels.hotels.map { hotel => p(
+      hotel.name, br(),
+      a(href:=hotel.link, hotel.address)
+    )}
   )
 
   def admin(): String = page("Admin")(
@@ -369,7 +370,7 @@ class Templates(details: Details, request: Request) {
                       h2(details.general.groom),
                     ),
                     p(id:="date", weekday.format(details.general.date), span(shortformat.format(details.general.date)), timefmt.format(details.general.date)),
-                    Markdown.render(details.invitation.details),
+                    details.invitation.details,
                     divider,
                     p(
                       "Get details and RSVP at", br(),
@@ -421,7 +422,7 @@ class Templates(details: Details, request: Request) {
                 div(cls:="gridBorder side", css("grid-area"):="w", (0 until 35).map(_ => img(src:="static/diamond.svg"))),
                 div(id:="b4", cls:="border",
                   div(cls:="title", s"The Wedding Ceremony of", br(), s"${details.general.groom} & ${details.general.bride}"),
-                  fullformat.format(details.general.date) + details.home.locations.find(_.name == "Ceremony").map(" - " + _.address.split("\n").head).getOrElse(""),
+                  fullformat.format(details.general.date) + details.home.locations.find(_.name == "Ceremony").map(" - " + _.address.content.split("\n").head).getOrElse(""),
                   schedule(details.program.ceremony),
                   div(cls:="people",
                     div(
@@ -450,12 +451,12 @@ class Templates(details: Details, request: Request) {
         div(id:="back",
           div(
             "Reception",
-            details.home.locations.find(_.name == "Reception").map(r => Markdown.render(r.address)),
+            details.home.locations.find(_.name == "Reception").map(r => r.address),
             schedule(details.program.reception)
           ),
           div(
             "Special Thanks",
-            Markdown.render(details.program.thanks)
+            details.program.thanks
           )
         )
       )
