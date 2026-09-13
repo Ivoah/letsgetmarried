@@ -101,9 +101,10 @@ class Endpoints(details: Details) {
     case ("POST", "/admin/details", r) =>
       Try(FormBuilder.parseForm[Details](r.form.asInstanceOf[Map[String, String]], "details")) match {
         case Success(newDetails) =>
-          println(newDetails)
           Response.Redirect("/admin/details")
-        case Failure(exception) => Response.BadRequest(exception.getMessage())
+        case Failure(exception) =>
+          exception.printStackTrace()
+          Response.BadRequest(exception.getMessage())
       }
       
     case ("GET", "/admin/rsvps", r) => Response(Templates(details, r).rsvps(Database.getAllRSVPs()))

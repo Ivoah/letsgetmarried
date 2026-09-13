@@ -21,8 +21,8 @@ def main(args: String*): Unit = {
   implicit val logger: String => Unit = if (conf.verbose()) println else (msg: String) => ()
 
   val details = Json.parse(Source.fromResource("details.json").getLines().mkString("\n")).as[Details]
-
   // val details = Database.getDetails()
+  // val details = summon[FormBuilder[Details]].default
 
   val endpoints = Endpoints(details)
   val server = conf.socket.toOption match {

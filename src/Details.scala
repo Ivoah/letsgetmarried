@@ -17,8 +17,9 @@ given Format[Code] {
   def writes(c: Code): JsValue = JsString(c.code)
 }
 given FormBuilder[Code] {
+  def default: Code = Code("")
   def createForm(c: Option[Code], n: String): Frag = textarea(name:=n, c.map(_.code))
-  def parseForm(f: Form, name: String): Code = Code(f(name))
+  def parseForm(f: Form, name: String): Code = Code(FormBuilder.parseForm[String](f, name))
 }
 
 case class Image(path: String)
@@ -30,8 +31,9 @@ given Format[Image] {
 	def writes(i: Image): JsValue = JsString(i.path)
 }
 given FormBuilder[Image] {
+  def default: Image = Image("")
   def createForm(i: Option[Image], n: String): Frag = input(name:=n, i.map(value:=_.path))
-  def parseForm(f: Form, name: String): Image = Image(f(name))
+  def parseForm(f: Form, name: String): Image = Image(FormBuilder.parseForm[String](f, name))
 }
 given Conversion[Image, Frag] = m => img(src:=m.path)
 
@@ -44,8 +46,9 @@ given Format[MultilineString] {
 	def writes(s: MultilineString): JsValue = JsString(s.content)
 }
 given FormBuilder[MultilineString] {
+  def default: MultilineString = MultilineString("")
   def createForm(s: Option[MultilineString], n: String): Frag = textarea(name:=n, s.map(_.content))
-  def parseForm(f: Form, name: String): MultilineString = MultilineString(f(name))
+  def parseForm(f: Form, name: String): MultilineString = MultilineString(FormBuilder.parseForm[String](f, name))
 }
 given Conversion[MultilineString, Frag] = m => StringFrag(m.content)
 

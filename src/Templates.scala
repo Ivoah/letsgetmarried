@@ -73,7 +73,7 @@ class Templates(details: Details, request: Request) {
 
   private def _footer() = footer(
     divider,
-    h1(cls:="underline", s"${details.general.groom.head}&${details.general.bride.head}"),
+    h1(cls:="underline", details.general.groom.headOption.map(_.toString), "&", details.general.bride.headOption.map(_.toString)),
     shortformat.format(details.general.date),
     p("Created from scratch"),
     p(a(href:="/admin", "Admin page")),
