@@ -15,8 +15,10 @@ given Format[Markdown] {
 	}
 	def writes(s: Markdown): JsValue = JsString(s.content)
 }
-given FormBuilder[Markdown] = (s, n) => textarea(name:=n, s.map(_.content))
-given FormParser[Markdown] = (f, n) => Markdown(f(n))
+given FormBuilder[Markdown] {
+	def createForm(v: Option[Markdown], n: String): Frag = textarea(name:=n, v.map(_.content))
+	def parseForm(f: Form, name: String): Markdown = Markdown(f(name))
+}
 given Conversion[Markdown, Frag] = m => Markdown.render(m)
 
 object Markdown {
