@@ -12,15 +12,15 @@ trait StringWrapper[T] extends Format[T] with FormBuilder[T] {
   def init(s: String): T
   def content(v: T): String
 
-  def default: T = init("")
-  def buildForm(v: Option[T], n: String): Frag
-  def parseForm(f: Form, name: String): T = init(FormBuilder.parseForm[String](f, name))
-
   def reads(v: JsValue): JsResult[T] = v match {
     case JsString(str) => JsSuccess(init(str))
     case _ => JsError()
   }
   def writes(s: T): JsValue = JsString(content(s))
+
+  def default: T = init("")
+  def buildForm(v: Option[T], n: String): Frag
+  def parseForm(f: Form, name: String): T = init(FormBuilder.parseForm[String](f, name))
 }
 
 case class Code(code: String)
@@ -47,82 +47,82 @@ given StringWrapper[MultilineString] {
 given Conversion[MultilineString, Frag] = m => StringFrag(m.content)
 
 case class Details(
-  general: Details.General = Details.General(),
-  home: Details.Home = Details.Home(),
-  story: Details.Story = Details.Story(),
-  weddingParty: Details.WeddingParty = Details.WeddingParty(),
-  photos: Details.Photos = Details.Photos(),
-  registry: Details.Registry = Details.Registry(),
-  rsvp: Details.RSVP = Details.RSVP(),
-  hotels: Details.Hotels = Details.Hotels(),
+  general: Details.General,
+  home: Details.Home,
+  story: Details.Story,
+  weddingParty: Details.WeddingParty,
+  photos: Details.Photos,
+  registry: Details.Registry,
+  rsvp: Details.RSVP,
+  hotels: Details.Hotels,
 
-  invitation: Details.Invitation = Details.Invitation(),
-  program: Details.Program = Details.Program()
+  invitation: Details.Invitation,
+  program: Details.Program
 ) derives Format, FormBuilder
 
 object Details {
   case class General(
-    underConstruction: Boolean = true,
-    contact: String = "nobody",
-    style: Code = Code(""),
-    headerImages: Seq[Image] = Seq(),
-    groom: String = "Groom name",
-    bride: String = "Bride name",
-    date: LocalDateTime = LocalDateTime.now().plusMonths(1),
-    location: String = "Nowhere"
+    underConstruction: Boolean,
+    contact: String,
+    style: Option[Code],
+    headerImages: Seq[Image],
+    groom: String,
+    bride: String,
+    date: LocalDateTime,
+    location: String
   ) derives Format, FormBuilder
 
-  case class Home(image: Image = Image(""), locations: Seq[Home.Location] = Seq()) derives Format, FormBuilder
+  case class Home(image: Image, locations: Seq[Home.Location]) derives Format, FormBuilder
   object Home {
     case class Location(name: String, time: String, address: MultilineString, link: String, details: Markdown) derives Format, FormBuilder
   }
 
-  case class Story(title: String = "Our Story", image: Image = Image(""), body: Markdown = Markdown("We met and falled in love.")) derives Format, FormBuilder
+  case class Story(title: String, image: Image, body: Markdown) derives Format, FormBuilder
   
-  case class WeddingParty(bridesmaids: Seq[WeddingParty.PartyMember] = Seq(), groomsmen: Seq[WeddingParty.PartyMember] = Seq()) derives Format, FormBuilder
+  case class WeddingParty(bridesmaids: Seq[WeddingParty.PartyMember], groomsmen: Seq[WeddingParty.PartyMember]) derives Format, FormBuilder
   object WeddingParty {
     case class PartyMember(name: String, role: String, image: Image, bio: Markdown) derives Format, FormBuilder
   }
   
-  case class Photos(photos: Seq[Photos.Photo] = Seq()) derives Format, FormBuilder
+  case class Photos(photos: Seq[Photos.Photo]) derives Format, FormBuilder
   object Photos {
     case class Photo(image: Image, caption: Option[Markdown]) derives Format, FormBuilder
   }
   
-  case class Registry(address: MultilineString = MultilineString(""), notes: Markdown = Markdown(""), items: Seq[Registry.Item] = Seq()) derives Format, FormBuilder {
+  case class Registry(address: MultilineString, notes: Markdown, items: Seq[Registry.Item]) derives Format, FormBuilder {
     require(items.distinctBy(_.id).length == items.length, "Duplicate id in registry list")
   }
   object Registry {
     case class Item(name: String, id: String, link: String, image: Image, price: Option[Double]) derives Format, FormBuilder
   }
   
-  case class RSVP(notes: Markdown = Markdown(""), invitations: Seq[RSVP.Invitation] = Seq()) derives Format, FormBuilder
+  case class RSVP(notes: Markdown, invitations: Seq[RSVP.Invitation]) derives Format, FormBuilder
   object RSVP {
     case class Invitation(name: String, people: Seq[String], childrenInvited: Option[Boolean]) derives Format, FormBuilder
   }
   
-  case class Hotels(notes: Markdown = Markdown(""), hotels: Seq[Hotels.Hotel] = Seq()) derives Format, FormBuilder
+  case class Hotels(notes: Markdown, hotels: Seq[Hotels.Hotel]) derives Format, FormBuilder
   object Hotels {
     case class Hotel(name: String, address: MultilineString, link: String) derives Format, FormBuilder
   }
 
   case class Invitation(
-    tagline: String = "Love endures all things",
-    parents: String = "Father and mother of the bride",
-    details: Markdown = Markdown("It's a wedding, come to it"),
-    url: String = "https://example.com",
-    deadline: LocalDate = LocalDate.now().plusWeeks(1)
+    tagline: String,
+    parents: String,
+    details: Markdown,
+    url: String,
+    deadline: LocalDate
   ) derives Format, FormBuilder
   
   case class Program(
-    ceremony: Seq[Seq[String]] = Seq(),
-    pastors: Seq[String] = Seq(),
-    pianist: String = "",
-    ushers: Seq[String] = Seq(),
-    flowerGirl: String = "flower girl",
-    ringBearer: String = "ring bearer",
-    reception: Seq[Seq[String]] = Seq(),
-    thanks: Markdown = Markdown("")
+    ceremony: Seq[Seq[String]],
+    pastors: Seq[String],
+    pianist: String,
+    ushers: Seq[String],
+    flowerGirl: String,
+    ringBearer: String,
+    reception: Seq[Seq[String]],
+    thanks: Markdown
   ) derives Format, FormBuilder
 }
 

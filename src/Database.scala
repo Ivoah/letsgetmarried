@@ -9,7 +9,7 @@ object Database {
   def getDetails(): Details = {
     sql"SELECT details FROM details ORDER BY date DESC LIMIT 1"
       .query(r => Json.parse(r.getString("details")).asOpt[Details])
-      .flatten.headOption.getOrElse(Details())
+      .flatten.headOption.getOrElse(FormBuilder.default[Details])
   }
 
   def saveDetails(details: Details): Boolean = {

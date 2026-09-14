@@ -53,7 +53,7 @@ class Templates(details: Details, request: Request) {
     if (request.cookies.exists(_.name == "neko")) script(src:="/static/neko.js") else frag(),
     link(rel:="icon", `type`:="image/png", href:="/static/favicon.jpg"),
     link(rel:="stylesheet", href:=s"/static/style.css"),
-    tag("style")(raw(details.general.style.code))
+    details.general.style.map(css => tag("style")(raw(css.code)))
   )
 
   private def _header(currentPage: String) = header(

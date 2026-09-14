@@ -21,8 +21,9 @@ trait FormBuilder[T] {
 }
 
 object FormBuilder {
-  def buildForm[T](v: Option[T], name: String)(using fb: FormBuilder[T]): Frag = fb.buildForm(v, name)
-  def parseForm[T](f: Form, name: String)(using fb: FormBuilder[T]): T = fb.parseForm(f, name)
+  def default[T: FormBuilder as fb]: T = fb.default
+  def buildForm[T: FormBuilder as fb](v: Option[T], name: String): Frag = fb.buildForm(v, name)
+  def parseForm[T: FormBuilder as fb](f: Form, name: String): T = fb.parseForm(f, name)
 
   given [T: FormBuilder] => FormBuilder[Seq[T]] {
     def default: Seq[T] = Seq[T]()
@@ -83,11 +84,11 @@ object FormBuilder {
     def parseForm(f: Form, name: String): LocalDateTime = LocalDateTime.parse(f(name))
   }
 
-  given FormBuilder[File] {
-    def default: File = ???
-    def buildForm(f: Option[File], n: String): Frag = input(`type`:="file", name:=n)
-    def parseForm(f: Form, name: String): File = ???
-  }
+  // given FormBuilder[File] {
+  //   def default: File = ???
+  //   def buildForm(f: Option[File], n: String): Frag = input(`type`:="file", name:=n)
+  //   def parseForm(f: Form, name: String): File = ???
+  // }
 
   private inline def getFormBuilders[T <: Tuple]: List[FormBuilder[?]] = inline erasedValue[T] match {
     case _: (t *: ts)  => summonInline[FormBuilder[t]] :: getFormBuilders[ts]
