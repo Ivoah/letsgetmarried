@@ -107,7 +107,7 @@ object FormBuilder {
 
   given FormBuilder[LocalDateTime]{
     def default: LocalDateTime = LocalDateTime.now()
-    def buildForm(ldt: Option[LocalDateTime], n: String) =input(`type`:="datetime-local", id:=n, name:=n, ldt.map(value:=_.withNano(0).toString))
+    def buildForm(ldt: Option[LocalDateTime], n: String) =input(`type`:="datetime-local", id:=n, name:=n, ldt.map(value:=_.withSecond(0).withNano(0).toString))
     def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): LocalDateTime = LocalDateTime.parse(f(name))
   }
 
