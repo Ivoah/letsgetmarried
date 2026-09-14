@@ -8,33 +8,18 @@ import scala.io.Source
 import scala.math.Ordering.Implicits.seqOrdering
 import scalatags.Text.all.*
 
-trait StringWrapper[T] extends Format[T] with FormBuilder[T] {
-  def init(s: String): T
-  def content(v: T): String
-
-  def reads(v: JsValue): JsResult[T] = v match {
-    case JsString(str) => JsSuccess(init(str))
-    case _ => JsError()
-  }
-  def writes(s: T): JsValue = JsString(content(s))
-
-  def default: T = init("")
-  def buildForm(v: Option[T], n: String): Frag
-  def parseForm(f: Form, name: String): T = init(FormBuilder.parseForm[String](f, name))
-}
-
 case class Code(code: String)
 given StringWrapper[Code] {
   def init(s: String) = Code(s)
   def content(c: Code) = c.code
-  def buildForm(c: Option[Code], n: String): Frag = textarea(name:=n, c.map(_.code))
+  def tag(c: Option[Code]): Tag = textarea(c.map(_.code))
 }
 
 case class Image(path: String)
 given StringWrapper[Image] {
   def init(s: String) = Image(s)
   def content(i: Image) = i.path
-  def buildForm(i: Option[Image], n: String): Frag = input(name:=n, i.map(value:=_.path))
+  def tag(i: Option[Image]): Tag = input(i.map(value:=_.path))
 }
 given Conversion[Image, Frag] = m => img(src:=m.path)
 
@@ -42,7 +27,7 @@ case class MultilineString(content: String)
 given StringWrapper[MultilineString] {
   def init(s: String) = MultilineString(s)
   def content(s: MultilineString): String = s.content
-  def buildForm(s: Option[MultilineString], n: String): Frag = textarea(name:=n, s.map(_.content))
+  def tag(s: Option[MultilineString]): Tag = textarea(s.map(_.content))
 }
 given Conversion[MultilineString, Frag] = m => StringFrag(m.content)
 

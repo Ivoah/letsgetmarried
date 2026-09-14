@@ -329,8 +329,8 @@ class Templates(details: Details, request: Request) {
     form(method:="POST",
       details.buildForm("details"),
       div(display:="flex", style:="gap: 10px",
-        input(`type`:="submit", value:="Save"),
-        a(cls:="button", href:="/details.json", "Download json")
+        input(`type`:="submit", formaction:="#", name:="save", value:="Save"),
+        input(`type`:="submit", formaction:="/details.json", value:="Download json")
       )
     )
   )

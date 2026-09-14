@@ -1,7 +1,6 @@
 package net.ivoah.letsgetmarried
 
 import org.rogach.scallop.*
-import scala.io.Source
 import net.ivoah.vial.*
 import play.api.libs.json.*
 
@@ -20,11 +19,7 @@ def main(args: String*): Unit = {
   val conf = Conf(args)
   implicit val logger: String => Unit = if (conf.verbose()) println else (msg: String) => ()
 
-  val details = Json.parse(Source.fromResource("details.json").getLines().mkString("\n")).as[Details]
-  // val details = Database.getDetails()
-  // val details = summon[FormBuilder[Details]].default
-
-  val endpoints = Endpoints(details)
+  val endpoints = Endpoints()
   val server = conf.socket.toOption match {
     case Some(path) =>
       println(s"Using unix socket: $path")

@@ -2,6 +2,7 @@ package net.ivoah.letsgetmarried
 
 import net.ivoah.squall.*
 import play.api.libs.json.*
+import scala.io.Source
 
 object Database {
   given Connector = Connector("jdbc:sqlite:database.db")
@@ -9,11 +10,11 @@ object Database {
   def getDetails(): Details = {
     sql"SELECT details FROM details ORDER BY date DESC LIMIT 1"
       .query(r => Json.parse(r.getString("details")).asOpt[Details])
-      .flatten.headOption.getOrElse(FormBuilder.default[Details])
+      .flatten.headOption.getOrElse(Json.parse(Source.fromResource("details.json").getLines().mkString("\n")).as[Details])
   }
 
   def saveDetails(details: Details): Boolean = {
-    sql"INSERT INTO details (details, date) VALUES (${Json.stringify(Json.toJson(details))}, NOW())".update() == 1
+    sql"INSERT INTO details (details, date) VALUES (${Json.stringify(Json.toJson(details))}, datetime('now', 'localtime'))".update() == 1
   }
 
   def getAllRSVPs(): Seq[RSVP] = sql"SELECT * FROM rsvp".query(RSVP.fromResultSet)

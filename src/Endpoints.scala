@@ -10,8 +10,10 @@ import java.time.LocalDate
 import scala.util.{Try, Success, Failure}
 import scala.util.Failure
 
-class Endpoints(details: Details) {
+class Endpoints() {
   given Config = ConfigFactory.load()
+
+  def details: Details = Database.getDetails()
 
   def router: Router = Router {
     case ("GET" , "/", r) => Response(Templates(details, r).home())
@@ -95,13 +97,17 @@ class Endpoints(details: Details) {
       }
 
     case ("GET", "/details.json", _) => Response(Json.stringify(Json.toJson(details)), Map("Content-Type" -> Seq("application/json")))
+    case ("POST", "/details.json", r) => Response(Json.stringify(Json.toJson(FormBuilder.parseForm[Details](r.form.asInstanceOf[Map[String, String]], "details", None, None))), Map("Content-Type" -> Seq("application/json")))
 
     case ("GET", "/admin", r) => Response(Templates(details, r).admin())
     case ("GET", "/admin/details", r) => Response(Templates(details, r).editDetails())
     case ("POST", "/admin/details", r) =>
-      Try(FormBuilder.parseForm[Details](r.form.asInstanceOf[Map[String, String]], "details")) match {
+      Try(FormBuilder.parseForm[Details](r.form.asInstanceOf[Map[String, String]], "details", r.form.get("adding").asInstanceOf[Option[String]], r.form.get("removing").asInstanceOf[Option[String]])) match {
         case Success(newDetails) =>
-          Response.Redirect("/admin/details")
+          if (r.form.get("save").nonEmpty) {
+            Database.saveDetails(newDetails)
+          }
+          Response(Templates(newDetails, r).editDetails())
         case Failure(exception) =>
           exception.printStackTrace()
           Response.BadRequest(exception.getMessage())

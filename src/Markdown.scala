@@ -11,7 +11,7 @@ case class Markdown(content: String)
 given StringWrapper[Markdown] {
 	def init(s: String) = Markdown(s)
 	def content(s: Markdown): String = s.content
-	def buildForm(m: Option[Markdown], n: String): Frag = textarea(name:=n, m.map(_.content))
+	def tag(m: Option[Markdown]): Tag = textarea(m.map(_.content))
 }
 given Conversion[Markdown, Frag] = m => Markdown.render(m)
 
