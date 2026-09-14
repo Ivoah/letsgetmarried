@@ -327,7 +327,7 @@ class Templates(details: Details, request: Request) {
 
   def editDetails() = page("Edit details")(
     form(method:="POST",
-      details.createForm("details"),
+      details.buildForm("details"),
       div(display:="flex", style:="gap: 10px",
         input(`type`:="submit", value:="Save"),
         a(cls:="button", href:="/details.json", "Download json")

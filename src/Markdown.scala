@@ -8,17 +8,10 @@ import scala.jdk.CollectionConverters.*
 import play.api.libs.json.*
 
 case class Markdown(content: String)
-given Format[Markdown] {
-	def reads(v: JsValue): JsResult[Markdown] = v match {
-		case JsString(str) => JsSuccess(Markdown(str))
-		case _ => JsError()
-	}
-	def writes(s: Markdown): JsValue = JsString(s.content)
-}
-given FormBuilder[Markdown] {
-	def default: Markdown = Markdown("")
-	def createForm(v: Option[Markdown], n: String): Frag = textarea(name:=n, v.map(_.content))
-	def parseForm(f: Form, name: String): Markdown = Markdown(FormBuilder.parseForm[String](f, name))
+given StringWrapper[Markdown] {
+	def init(s: String) = Markdown(s)
+	def content(s: Markdown): String = s.content
+	def buildForm(m: Option[Markdown], n: String): Frag = textarea(name:=n, m.map(_.content))
 }
 given Conversion[Markdown, Frag] = m => Markdown.render(m)
 

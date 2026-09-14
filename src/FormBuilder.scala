@@ -13,21 +13,21 @@ type Form = Map[String, String]
 
 trait FormBuilder[T] {
   def default: T
-  def createForm(v: Option[T], name: String): Frag
+  def buildForm(v: Option[T], name: String): Frag
   def parseForm(f: Form, name: String): T
   extension(v: T) {
-    def createForm(name: String): Frag = this.createForm(Some(v), name)
+    def buildForm(name: String): Frag = this.buildForm(Some(v), name)
   }
 }
 
 object FormBuilder {
-  def createForm[T](v: Option[T], name: String)(using fb: FormBuilder[T]): Frag = fb.createForm(v, name)
+  def buildForm[T](v: Option[T], name: String)(using fb: FormBuilder[T]): Frag = fb.buildForm(v, name)
   def parseForm[T](f: Form, name: String)(using fb: FormBuilder[T]): T = fb.parseForm(f, name)
 
   given [T: FormBuilder] => FormBuilder[Seq[T]] {
     def default: Seq[T] = Seq[T]()
-    def createForm(v: Option[Seq[T]], name: String): Frag = ul(
-      for ((v, i) <- v.toSeq.flatten.zipWithIndex) yield li(v.createForm(s"$name[$i]")),
+    def buildForm(v: Option[Seq[T]], name: String): Frag = ul(
+      for ((v, i) <- v.toSeq.flatten.zipWithIndex) yield li(v.buildForm(s"$name[$i]")),
       li(button("Add..."))
     )
     def parseForm(f: Form, name: String): Seq[T] = {
@@ -43,8 +43,8 @@ object FormBuilder {
 
   given [T: FormBuilder] => FormBuilder[Option[T]] {
     def default: Option[T] = None
-    def createForm(o: Option[Option[T]], n: String) = o.flatten match {
-      case Some(v) => FormBuilder.createForm(Some(v), n)
+    def buildForm(o: Option[Option[T]], n: String) = o.flatten match {
+      case Some(v) => FormBuilder.buildForm(Some(v), n)
       case None => button("Add...")
     }
     def parseForm(f: Form, n: String): Option[T] = if (f.contains(n)) Try(FormBuilder.parseForm[T](f, n)).toOption else None
@@ -52,19 +52,19 @@ object FormBuilder {
 
   given FormBuilder[String] {
     def default: String = ""
-    def createForm(s: Option[String], n: String): Frag = input(name:=n, s.map(value:=_))
+    def buildForm(s: Option[String], n: String): Frag = input(name:=n, s.map(value:=_))
     def parseForm(f: Form, name: String): String = f(name).replaceAllLiterally("\r\n", "\n")
   }
 
   given FormBuilder[Double] {
     def default: Double = 0
-    def createForm(d: Option[Double], n: String): Frag = input(`type`:="number", name:=n, d.map(value:=_))
+    def buildForm(d: Option[Double], n: String): Frag = input(`type`:="number", name:=n, d.map(value:=_))
     def parseForm(f: Form, name: String): Double = f(name).toDouble
   }
 
   given FormBuilder[Boolean] {
     def default: Boolean = false
-    def createForm(b: Option[Boolean], n: String): Frag = frag(
+    def buildForm(b: Option[Boolean], n: String): Frag = frag(
       input(`type`:="hidden", name:=n, value:="false"),
       input(`type`:="checkbox", name:=n, value:="true", if (b.exists(identity)) checked else frag())
     )
@@ -73,19 +73,19 @@ object FormBuilder {
 
   given FormBuilder[LocalDate]    {
     def default: LocalDate = LocalDate.now()
-    def createForm(ld: Option[LocalDate], n: String) = input(`type`:="date", name:=n, ld.map(value:=_.toString))
+    def buildForm(ld: Option[LocalDate], n: String) = input(`type`:="date", name:=n, ld.map(value:=_.toString))
     def parseForm(f: Form, name: String): LocalDate = LocalDate.parse(f(name))
   }
 
   given FormBuilder[LocalDateTime]{
     def default: LocalDateTime = LocalDateTime.now()
-    def createForm(ldt: Option[LocalDateTime], n: String) =input(`type`:="datetime-local", name:=n, ldt.map(value:=_.withNano(0).toString))
+    def buildForm(ldt: Option[LocalDateTime], n: String) =input(`type`:="datetime-local", name:=n, ldt.map(value:=_.withNano(0).toString))
     def parseForm(f: Form, name: String): LocalDateTime = LocalDateTime.parse(f(name))
   }
 
   given FormBuilder[File] {
     def default: File = ???
-    def createForm(f: Option[File], n: String): Frag = input(`type`:="file", name:=n)
+    def buildForm(f: Option[File], n: String): Frag = input(`type`:="file", name:=n)
     def parseForm(f: Form, name: String): File = ???
   }
 
@@ -114,11 +114,11 @@ object FormBuilder {
 
     def default: T = p.fromTuple(formBuilders.map(_.default).toTuple.asInstanceOf[p.MirroredElemTypes])
 
-    def createForm(v: Option[T], name: String): Frag = {
+    def buildForm(v: Option[T], name: String): Frag = {
       val elements = v.map(_.asInstanceOf[Product].productIterator.toIndexedSeq)
       ul(labels.zip(formBuilders).zipWithIndex.map {
         case ((l, fb), i) =>
-          li(s"${prettyLabel(l)}: ", fb.asInstanceOf[FormBuilder[Any]].createForm(elements.map(_(i)), s"$name.$l"))
+          li(s"${prettyLabel(l)}: ", fb.asInstanceOf[FormBuilder[Any]].buildForm(elements.map(_(i)), s"$name.$l"))
       })
     }
 
