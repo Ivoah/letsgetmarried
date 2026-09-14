@@ -48,7 +48,7 @@ case class Details(
 object Details {
   case class General(
     underConstruction: Boolean,
-    contact: String,
+    contactEmail: String,
     style: Option[Code],
     headerImages: Seq[Image],
     groom: String,

@@ -66,7 +66,7 @@ class Endpoints() {
         case Some(name) =>
           details.rsvp.invitations.find(invite => (invite.name +: invite.people).exists(_.equalsIgnoreCase(name.strip().split("\\s+").mkString(" ")))) match {
             case Some(invitation) => Response(Templates(details, r).rsvpFound(invitation, Database.findRSVP(invitation.name)))
-            case None => Response(Templates(details, r).message("RSVP", s"Could not find an invitation for \"$name\". Please make sure you entered your full first and last name as it appears on your invitation. Contact [${details.general.contact}](mailto:${details.general.contact}) if you believe this is in error."), status_code = 404)
+            case None => Response(Templates(details, r).message("RSVP", s"Could not find an invitation for \"$name\". Please make sure you entered your full first and last name as it appears on your invitation. Email [${details.general.contactEmail}](mailto:${details.general.contactEmail}) if you believe this is in error."), status_code = 404)
           }
         case None => Response(Templates(details, r).rsvp())
       }
