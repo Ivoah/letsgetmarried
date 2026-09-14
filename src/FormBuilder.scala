@@ -109,6 +109,7 @@ object FormBuilder {
 
   private def prettyLabel(l: String): String = l.split("(?=[A-Z])").map(_.toLowerCase).mkString(" ").capitalize
 
+  @annotation.nowarn("name=InlinedAnonClassWarning")
   inline def derived[T](using p: Mirror.ProductOf[T]): FormBuilder[T] = new FormBuilder[T] {
     val formBuilders = getFormBuilders[p.MirroredElemTypes]
     val labels       = getLabels[p.MirroredElemLabels]

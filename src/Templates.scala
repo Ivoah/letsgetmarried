@@ -398,7 +398,7 @@ class Templates(details: Details, request: Request) {
   def program(): String = {
     def people(title: String, names: IterableOnce[String]) = div(
       strong(title), br(),
-      names.map(n => frag(n, br())).toSeq
+      names.iterator.map(n => frag(n, br())).toSeq
     )
 
     def schedule(schedule: Seq[Seq[String]]) = div(cls:="schedule",

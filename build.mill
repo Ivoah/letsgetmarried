@@ -10,6 +10,7 @@ import java.util.Base64
 
 object `package` extends ScalaModule {
   def scalaVersion = "3.8.4"
+  def scalacOptions = Seq("-deprecation", "-feature", "-Werror", "-language:implicitConversions")
   def mvnDeps: T[Seq[Dep]] = Seq(
     mvn"org.rogach::scallop::5.2.0",
     mvn"net.ivoah::vial:0.12.2",
