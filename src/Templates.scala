@@ -276,9 +276,35 @@ class Templates(details: Details, request: Request) {
   def admin(): String = page("Admin")(
     ul(
       li(a(href:="/admin/details", "Edit details")),
-      li(a(href:="/admin/rsvps", "RSVPs")),
-      li(a(href:="/admin/gifts", "Gifts"))
+      li(a(href:="/admin/gifts", "Gifts")),
+      li(a(href:="/admin/rsvps", "RSVPs"))
     )
+  )
+
+  def editDetails() = page("Edit details")(
+    form(method:="POST",
+      details.buildForm("details"),
+      div(display:="flex", style:="gap: 10px",
+        input(`type`:="submit", formaction:="#", name:="save", value:="Save"),
+        input(`type`:="submit", formaction:="/details.json", value:="Download json")
+      )
+    )
+  )
+  
+  def gifts(allGifts: Seq[Gift]): String = page("Gifts")(
+    p(s"Total: ${allGifts.length}"),
+    for ((giver, gifts) <- allGifts.groupBy(_.purchasedBy).toSeq) yield {
+      tag("details")(
+        tag("summary")(
+          span(giver),
+          span(s"${gifts.length}")
+        ),
+        ul(gifts.map(gift => frag(
+          li(attr("title"):=gift.id, s"${details.registry.items.find(_.id == gift.id).get.name}", gift.amount.map(g => s": $$$g").getOrElse("")),
+          if (gift.notes.nonEmpty) p(gift.notes) else frag()
+        )))
+      )
+    }
   )
 
   def rsvps(rsvps: Seq[RSVP]): String = page("RSVPs")(
@@ -307,32 +333,6 @@ class Templates(details: Details, request: Request) {
         rsvp.map(_.details).getOrElse(frag())
       )
     }
-  )
-  
-  def gifts(allGifts: Seq[Gift]): String = page("Gifts")(
-    p(s"Total: ${allGifts.length}"),
-    for ((giver, gifts) <- allGifts.groupBy(_.purchasedBy).toSeq) yield {
-      tag("details")(
-        tag("summary")(
-          span(giver),
-          span(s"${gifts.length}")
-        ),
-        ul(gifts.map(gift => frag(
-          li(attr("title"):=gift.id, s"${details.registry.items.find(_.id == gift.id).get.name}", gift.amount.map(g => s": $$$g").getOrElse("")),
-          if (gift.notes.nonEmpty) p(gift.notes) else frag()
-        )))
-      )
-    }
-  )
-
-  def editDetails() = page("Edit details")(
-    form(method:="POST",
-      details.buildForm("details"),
-      div(display:="flex", style:="gap: 10px",
-        input(`type`:="submit", formaction:="#", name:="save", value:="Save"),
-        input(`type`:="submit", formaction:="/details.json", value:="Download json")
-      )
-    )
   )
 
   def invitation(): String = doctype("html")(html(

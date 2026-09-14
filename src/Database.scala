@@ -3,14 +3,22 @@ package net.ivoah.letsgetmarried
 import net.ivoah.squall.*
 import play.api.libs.json.*
 import scala.io.Source
+import scala.util.Try
+import java.nio.file.{Files, Paths}
 
 object Database {
-  given Connector = Connector("jdbc:sqlite:database.db")
+  given Connector = {
+    if (Files.notExists(Paths.get("database.db"))) {
+      given Connector("jdbc:sqlite:database.db")
+      val schema = Source.fromResource("schema.sql").getLines().mkString("\n")
+      schema.sql.execute()
+      summon[Connector]
+    } else Connector("jdbc:sqlite:database.db")
+  }
 
   def getDetails(): Details = {
     sql"SELECT details FROM details ORDER BY date DESC LIMIT 1"
-      .query(r => Json.parse(r.getString("details")).asOpt[Details])
-      .flatten.headOption.getOrElse(Json.parse(Source.fromResource("details.json").getLines().mkString("\n")).as[Details])
+      .query(r => Json.parse(r.getString("details")).asOpt[Details]).flatten.headOption.getOrElse(FormBuilder.default[Details])
   }
 
   def saveDetails(details: Details): Boolean = {
