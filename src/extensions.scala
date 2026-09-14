@@ -7,5 +7,5 @@ extension [T](i: Seq[T]) {
 }
 
 extension (f: Format.type) {
-	inline def derived[T]: Format[T] = Json.format[T]
+  inline def derived[T]: Format[T] = Json.format[T]
 }

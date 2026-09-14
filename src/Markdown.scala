@@ -9,9 +9,9 @@ import play.api.libs.json.*
 
 case class Markdown(content: String)
 given StringWrapper[Markdown] {
-	def init(s: String) = Markdown(s)
-	def content(s: Markdown): String = s.content
-	def tag(m: Option[Markdown]): Tag = textarea(m.map(_.content))
+  def init(s: String) = Markdown(s)
+  def content(s: Markdown): String = s.content
+  def tag(m: Option[Markdown]): Tag = textarea(m.map(_.content))
 }
 given Conversion[Markdown, Frag] = m => Markdown.render(m)
 
