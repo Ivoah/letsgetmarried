@@ -42,9 +42,8 @@ class Templates(details: Details, request: Request) {
     "Wedding Party" -> "/party",
     "Photos" -> "/photos",
     "Registry" -> "/registry",
-    "RSVP" -> "/rsvp",
-    "Hotels" -> "/hotels"
-  )
+    "RSVP" -> "/rsvp"
+  ) ++ (if (details.hotels.hotels.nonEmpty) Some("Hotels" -> "/hotels") else None)
 
   private def _head(_title: String) = head(
     title(s"${details.general.groom.split(" ").head} & ${details.general.bride.split(" ").head} - $_title"),
