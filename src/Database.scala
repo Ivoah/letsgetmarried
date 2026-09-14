@@ -3,7 +3,6 @@ package net.ivoah.letsgetmarried
 import net.ivoah.squall.*
 import play.api.libs.json.*
 import scala.io.Source
-import scala.util.Try
 import java.nio.file.{Files, Paths}
 
 object Database {

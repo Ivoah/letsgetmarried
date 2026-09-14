@@ -2,7 +2,6 @@ package net.ivoah.letsgetmarried
 
 import org.rogach.scallop.*
 import net.ivoah.vial.*
-import play.api.libs.json.*
 
 @main
 def main(args: String*): Unit = {

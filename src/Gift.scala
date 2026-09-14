@@ -1,6 +1,5 @@
 package net.ivoah.letsgetmarried
 
-import scalatags.Text.all.*
 import java.sql.ResultSet
 import java.time.LocalDate
 

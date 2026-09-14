@@ -3,9 +3,6 @@ package net.ivoah.letsgetmarried
 import play.api.libs.json.*
 
 import java.time.{LocalDate, LocalDateTime}
-import java.io.File
-import scala.io.Source
-import scala.math.Ordering.Implicits.seqOrdering
 import scalatags.Text.all.*
 
 case class Code(code: String)

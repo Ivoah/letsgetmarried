@@ -1,7 +1,6 @@
 package net.ivoah.letsgetmarried
 
 import java.time.{LocalDate, LocalDateTime}
-import java.io.File
 import scalatags.Text.all.*
 
 import play.api.libs.json.*
@@ -9,7 +8,6 @@ import play.api.libs.json.*
 import scala.deriving.Mirror
 import scala.compiletime.*
 import scala.util.Try
-import java.text.SimpleDateFormat
 
 type Form = Map[String, String]
 
@@ -110,12 +108,6 @@ object FormBuilder {
     def buildForm(ldt: Option[LocalDateTime], n: String) =input(`type`:="datetime-local", id:=n, name:=n, ldt.map(value:=_.withSecond(0).withNano(0).toString))
     def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): LocalDateTime = LocalDateTime.parse(f(name))
   }
-
-  // given FormBuilder[File] {
-  //   def default: File = ???
-  //   def buildForm(f: Option[File], n: String): Frag = input(`type`:="file", id:=n, name:=n)
-  //   def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): File = ???
-  // }
 
   private inline def getFormBuilders[T <: Tuple]: List[FormBuilder[?]] = inline erasedValue[T] match {
     case _: (t *: ts)  => summonInline[FormBuilder[t]] :: getFormBuilders[ts]

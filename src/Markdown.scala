@@ -5,7 +5,6 @@ import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import scalatags.Text.all.*
 import scala.jdk.CollectionConverters.*
-import play.api.libs.json.*
 
 case class Markdown(content: String)
 given StringWrapper[Markdown] {

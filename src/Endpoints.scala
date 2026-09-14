@@ -6,8 +6,7 @@ import net.ivoah.vial.*
 import scalatags.Text.all.*
 
 import java.nio.file.Paths
-import java.time.LocalDate
-import scala.util.{Try, Success, Failure}
+import scala.util.{Try, Success}
 import scala.util.Failure
 
 class Endpoints() {
