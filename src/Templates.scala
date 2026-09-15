@@ -287,7 +287,20 @@ class Templates(details: Details, request: Request) {
         input(`type`:="submit", formaction:="#", name:="save", value:="Save"),
         input(`type`:="submit", formaction:="/details.json", value:="Download json")
       )
-    )
+    ),
+    script(`type`:="module", raw("""
+      import {EditorView, basicSetup} from "https://esm.sh/codemirror";
+      import {css} from "https://esm.sh/@codemirror/lang-css";
+
+      for (const textarea of document.getElementsByClassName("codeEditor")) {
+        let view = new EditorView({doc: textarea.value, extensions: [basicSetup, css()]});
+        textarea.parentNode.insertBefore(view.dom, textarea);
+        textarea.style.display = "none";
+        if (textarea.form) textarea.form.addEventListener("submit", () => {
+          textarea.value = view.state.doc.toString();
+        })
+      }
+    """))
   )
   
   def gifts(allGifts: Seq[Gift]): String = page("Gifts")(

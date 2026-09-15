@@ -173,6 +173,11 @@ footer {
   }
 }
 
+.cm-editor {
+  background: white;
+  border: 1px solid lightgray;
+}
+
 #home {
   .location {
     border-top: 1px #AAA solid;

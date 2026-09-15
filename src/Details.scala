@@ -9,7 +9,7 @@ case class Code(code: String)
 given StringWrapper[Code] {
   def init(s: String) = Code(s)
   def content(c: Code) = c.code
-  def tag(c: Option[Code]): Tag = textarea(c.map(_.code))
+  def tag(c: Option[Code]): Tag = textarea(cls:="codeEditor", c.map(_.code))
 }
 
 case class Image(path: String)
