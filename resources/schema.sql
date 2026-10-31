@@ -1,5 +1,12 @@
+create table schema_migrations (
+    version integer                 not null primary key,
+    date    datetime default current_timestamp not null,
+    script  text                    not null
+);
+
 create table details (
     details TEXT NOT NULL,
+    version INTEGER NOT NULL,
     date    DATETIME NOT NULL
 );
 

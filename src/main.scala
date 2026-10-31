@@ -10,6 +10,7 @@ def main(args: String*): Unit = {
     val port: ScallopOption[Int] = opt[Int](default = Some(4269))
     val socket: ScallopOption[String] = opt[String]()
     val verbose: ScallopOption[Boolean] = opt[Boolean](default = Some(false))
+    val skipMigration: ScallopOption[Boolean] = opt[Boolean]()
 
     conflicts(socket, List(host, port))
     verify()
@@ -17,6 +18,8 @@ def main(args: String*): Unit = {
 
   val conf = Conf(args)
   implicit val logger: String => Unit = if (conf.verbose()) println else (msg: String) => ()
+
+  if (!conf.skipMigration()) Database.migrateAll()
 
   val endpoints = Endpoints()
   val server = conf.socket.toOption match {

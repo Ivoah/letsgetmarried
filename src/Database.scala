@@ -4,16 +4,46 @@ import net.ivoah.squall.*
 import play.api.libs.json.*
 import scala.io.Source
 import java.nio.file.{Files, Paths}
+import scala.jdk.StreamConverters.*
 
 object Database {
   given Connector = {
     if (Files.notExists(Paths.get("database.db"))) {
-      given Connector("jdbc:sqlite:database.db")
-      for (part <- Source.fromResource("schema.sql").getLines().mkString("\n").split(";")) {
-        part.sql.execute()
-      }
-      summon[Connector]
+      val conn = Connector("jdbc:sqlite:database.db")
+      val schema = Source.fromResource("schema.sql").getLines().mkString("\n")
+      val version = getMigrations().map(_._1).maxOption.getOrElse(0)
+      migrate(version, schema)(using conn)
+      conn
     } else Connector("jdbc:sqlite:database.db")
+  }
+
+  private def getMigrations(laterThan: Int = 0): Map[Int, String] = {
+    Files.list(Paths.get("schema_migrations"))
+      .toScala(List)
+      .collect(p => p.getFileName.toString match {
+        case s"v${IntExtractor(version)}.sql" if version > laterThan => version -> Files.readString(p)
+      })
+      .toMap
+  }
+
+  def migrateAll(): Unit = {
+    val current_version = sql"SELECT coalesce(max(version), 0) version FROM schema_migrations".query(_.getInt("version")).head
+    getMigrations(current_version).toSeq.sortBy(_._1).foreach(migrate.tupled)
+  }
+
+  private def migrate(version: Int, script: String)(using Connector): Unit = {
+    println(s"Migrating schema to v$version:")
+    println(script)
+    try {
+      script.split(";").foreach(_.sql.execute())
+      sql"INSERT INTO schema_migrations (version, script) VALUES ($version, $script)".execute()
+      println(s"Successfully migrated schema to v$version")
+    } catch {
+      case e: Exception =>
+        println(s"Could not migrate schema to v$version")
+        e.printStackTrace()
+        System.exit(1)
+    }
   }
 
   def getDetails(): Details = {
