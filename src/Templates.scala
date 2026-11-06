@@ -281,7 +281,7 @@ class Templates(details: Details, request: Request) {
   )
 
   def editDetails() = page("Edit details")(
-    form(method:="POST",
+    form(method:="POST", enctype:="multipart/form-data",
       details.buildForm("details"),
       div(display:="flex", style:="gap: 10px",
         input(`type`:="submit", formaction:="#", name:="save", value:="Save"),

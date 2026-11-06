@@ -5,7 +5,7 @@
 .vscode/
 out/
 
-photos/
+uploads/
 originals/
 application.conf
 details.yaml

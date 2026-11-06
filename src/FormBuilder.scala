@@ -8,13 +8,12 @@ import play.api.libs.json.*
 import scala.deriving.Mirror
 import scala.compiletime.*
 import scala.util.Try
-
-type Form = Map[String, String]
+import java.io.File
 
 trait FormBuilder[T] {
   def default: T
   def buildForm(v: Option[T], name: String): Frag
-  def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): T
+  def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): T
   extension(v: T) {
     def buildForm(name: String): Frag = this.buildForm(Some(v), name)
   }
@@ -33,21 +32,21 @@ trait StringWrapper[T] extends Format[T] with FormBuilder[T] {
 
   def default: T = init("")
   def buildForm(v: Option[T], n: String): Frag = tag(v)(id:=n, name:=n)
-  def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): T = init(FormBuilder.parseForm[String](f, name, adding, removing))
+  def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): T = init(FormBuilder.parseForm[String](f, name, adding, removing))
 }
 
 object FormBuilder {
   def default[T: FormBuilder as fb]: T = fb.default
   def buildForm[T: FormBuilder as fb](v: Option[T], name: String): Frag = fb.buildForm(v, name)
-  def parseForm[T: FormBuilder as fb](f: Form, name: String, adding: Option[String], removing: Option[String]): T = fb.parseForm(f, name, adding, removing)
+  def parseForm[T: FormBuilder as fb](f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): T = fb.parseForm(f, name, adding, removing)
 
   given [T: FormBuilder as fb] => FormBuilder[Seq[T]] {
     def default: Seq[T] = Seq[T]()
     def buildForm(v: Option[Seq[T]], n: String): Frag = ul(id:=n,
-      for ((v, i) <- v.toSeq.flatten.zipWithIndex) yield li(button(raw("&times;"), name:="removing", value:=s"$n[$i]", formaction:=s"#$n"), v.buildForm(s"$n[$i]")),
-      li(button("Add", name:="adding", value:=n, formaction:=s"#$n[${v.toSeq.flatten.length}]"))
+      for ((v, i) <- v.toSeq.flatten.zipWithIndex) yield li(button(raw("&times;"), name:="removing", value:=s"$n.seq[$i]", formaction:=s"#$n"), v.buildForm(s"$n[$i]")),
+      li(button("Add", name:="adding", value:=s"$n.seq", formaction:=s"#$n[${v.toSeq.flatten.length}]"))
     )
-    def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): Seq[T] = {
+    def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): Seq[T] = {
       val pattern = s"^\\Q$name\\E(.*)$$".r
       val values = f.collect {
         case (pattern(rest), v) => rest -> v
@@ -55,10 +54,10 @@ object FormBuilder {
       val seq = values.keys.map{case s"[$i]$rest" => i.toInt}.maxOption
         .toSeq.flatMap(0 to _)
         .collect {
-          case i if !removing.exists(_ == s"$name[$i]") => fb.parseForm(values, s"[$i]", adding.map(_.stripPrefix(s"$name")), removing.map(_.stripPrefix(s"$name")))
+          case i if !removing.exists(_ == s"$name.seq[$i]") => fb.parseForm(values, s"[$i]", adding.map(_.stripPrefix(s"$name")), removing.map(_.stripPrefix(s"$name")))
         }
 
-      if (adding.exists(_ == name)) seq :+ fb.default
+      if (adding.exists(_ == s"$name.seq")) seq :+ fb.default
       else seq
     }
   }
@@ -66,12 +65,12 @@ object FormBuilder {
   given [T: FormBuilder as fb] => FormBuilder[Option[T]] {
     def default: Option[T] = None
     def buildForm(o: Option[Option[T]], n: String) = o.flatten match {
-      case Some(v) => frag(button(raw("&times;"), name:="removing", value:=n, formaction:=s"#n"), fb.buildForm(Some(v), n))
-      case None => button("Add", name:="adding", value:=n, formaction:=s"#$n")
+      case Some(v) => frag(button(raw("&times;"), name:="removing", value:=s"$n.option", formaction:=s"#$n"), fb.buildForm(Some(v), n))
+      case None => button("Add", name:="adding", value:=s"$n.option", formaction:=s"#$n")
     }
-    def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): Option[T] = {
-      if (f.contains(name) && !removing.exists(_ == name)) Try(fb.parseForm(f, name, adding, removing)).toOption
-      else if (adding.exists(_ == name)) Some(fb.default)
+    def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): Option[T] = {
+      if (f.contains(name) && !removing.exists(_ == s"$name.option")) Try(fb.parseForm(f, name, adding, removing)).toOption
+      else if (adding.exists(_ == s"$name.option")) Some(fb.default)
       else None
     }
   }
@@ -79,13 +78,13 @@ object FormBuilder {
   given FormBuilder[String] {
     def default: String = ""
     def buildForm(s: Option[String], n: String): Frag = input(id:=n, name:=n, s.map(value:=_))
-    def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): String = f(name).replace("\r\n", "\n")
+    def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): String = f(name).asInstanceOf[String].replace("\r\n", "\n")
   }
 
   given FormBuilder[Double] {
     def default: Double = 0
     def buildForm(d: Option[Double], n: String): Frag = input(`type`:="number", id:=n, name:=n, d.map(value:=_))
-    def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): Double = f(name).toDouble
+    def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): Double = f(name).asInstanceOf[String].toDouble
   }
 
   given FormBuilder[Boolean] {
@@ -94,19 +93,19 @@ object FormBuilder {
       input(`type`:="hidden", name:=n, value:="false"),
       input(`type`:="checkbox", id:=n, name:=n, value:="true", if (b.exists(identity)) checked else frag())
     )
-    def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): Boolean = f(name) == "true"
+    def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): Boolean = f(name) == "true"
   }
 
   given FormBuilder[LocalDate]    {
     def default: LocalDate = LocalDate.now()
     def buildForm(ld: Option[LocalDate], n: String) = input(`type`:="date", id:=n, name:=n, ld.map(value:=_.toString))
-    def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): LocalDate = LocalDate.parse(f(name))
+    def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): LocalDate = LocalDate.parse(f(name).asInstanceOf[String])
   }
 
   given FormBuilder[LocalDateTime]{
     def default: LocalDateTime = LocalDateTime.now()
     def buildForm(ldt: Option[LocalDateTime], n: String) = input(`type`:="datetime-local", id:=n, name:=n, ldt.map(value:=_.withSecond(0).withNano(0).toString))
-    def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): LocalDateTime = LocalDateTime.parse(f(name))
+    def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): LocalDateTime = LocalDateTime.parse(f(name).asInstanceOf[String])
   }
 
   private inline def getFormBuilders[T <: Tuple]: List[FormBuilder[?]] = inline erasedValue[T] match {
@@ -143,7 +142,7 @@ object FormBuilder {
       })
     }
 
-    def parseForm(f: Form, name: String, adding: Option[String], removing: Option[String]): T = {
+    def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): T = {
       val pattern = s"^\\Q$name.\\E(.*)$$".r
       val fields = labels.zip(formBuilders).map {
         case (l, fb) => fb.parseForm(f.collect {

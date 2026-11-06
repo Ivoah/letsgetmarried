@@ -8,6 +8,7 @@ import scalatags.Text.all.*
 import java.nio.file.Paths
 import scala.util.{Try, Success}
 import scala.util.Failure
+import java.io.File
 
 class Endpoints() {
   given Config = ConfigFactory.load()
@@ -101,17 +102,20 @@ class Endpoints() {
     case ("GET", "/admin", r) => Response(Templates(details, r).admin())
     case ("GET", "/admin/details", r) => Response(Templates(details, r).editDetails())
     case ("POST", "/admin/details", r) =>
-      Try(FormBuilder.parseForm[Details](r.form.asInstanceOf[Map[String, String]], "details", r.form.get("adding").asInstanceOf[Option[String]], r.form.get("removing").asInstanceOf[Option[String]])) match {
+      Try(FormBuilder.parseForm[Details](r.form, "details", r.form.get("adding").asInstanceOf[Option[String]], r.form.get("removing").asInstanceOf[Option[String]])) match {
         case Success(newDetails) =>
           if (r.form.get("save").nonEmpty) {
             Database.saveDetails(newDetails)
+            for (f <- File("uploads").listFiles()) {
+              if (!newDetails.uploads.contains(f.getName())) f.delete()
+            }
           }
           Response(Templates(newDetails, r).editDetails())
         case Failure(exception) =>
           exception.printStackTrace()
           Response.BadRequest(exception.getMessage())
       }
-      
+
     case ("GET", "/admin/rsvps", r) => Response(Templates(details, r).rsvps(Database.getAllRSVPs()))
     case ("GET", "/admin/gifts", r) => Response(Templates(details, r).gifts(Database.getAllGifts()))
 
@@ -120,6 +124,6 @@ class Endpoints() {
     // case ("GET", "/seating", r) => Response(Templates(details, r).seating())
     // case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
     case ("GET", s"/static/$file", _) => Response.forFile(Paths.get("static"), Paths.get(file))
-    case ("GET", s"/photos/$file", _) => Response.forFile(Paths.get("photos"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
+    case ("GET", s"/uploads/$file", _) => Response.forFile(Paths.get("uploads"), Paths.get(file), None, Map("Cache-Control" -> Seq("max-age=3600")))
   }
 }

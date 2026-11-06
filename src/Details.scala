@@ -3,6 +3,7 @@ package net.ivoah.letsgetmarried
 import play.api.libs.json.*
 
 import java.time.{LocalDate, LocalDateTime}
+import java.io.File
 import scalatags.Text.all.*
 
 case class Code(code: String)
@@ -13,12 +14,37 @@ given StringWrapper[Code] {
 }
 
 case class Image(path: String)
-given StringWrapper[Image] {
-  def init(s: String) = Image(s)
-  def content(i: Image) = i.path
-  def tag(i: Option[Image]): Tag = input(i.map(value:=_.path))
+given FormBuilder[Image] {
+  def default: Image = Image("")
+  def buildForm(i: Option[Image], n: String) = frag(
+    i match {
+      case Some(i) if i.path != "" => frag(
+        button(raw("&times;"), name:="removing", value:=s"$n.photo", formaction:=s"#$n"),
+        img(src:=i.path),
+        input(`type`:="hidden", name:=s"$n$$fallback", value:=i.path)
+      )
+      case _ => frag()
+    },
+    input(`type`:="file", id:=n, name:=n)
+  )
+  def parseForm(f: Map[String, String | File], name: String, adding: Option[String], removing: Option[String]): Image = {
+    f(name) match {
+      case file: File =>
+        val dest = File(s"uploads/${file.getName()}")
+        file.renameTo(dest)
+        Image(s"/${dest.toString()}")
+      case _ => Image(if (removing.exists(_ == s"$name.photo")) "" else f.getOrElse(s"$name$$fallback", "").asInstanceOf[String])
+    }
+  }
 }
-given Conversion[Image, Frag] = m => img(src:=m.path)
+given Format[Image] {
+  def reads(v: JsValue): JsResult[Image] = v match {
+    case JsString(str) => JsSuccess(Image(str))
+    case _ => JsError()
+  }
+  def writes(i: Image): JsValue = JsString(i.path)
+}
+given Conversion[Image, Frag] = i => img(src:=i.path)
 
 case class MultilineString(content: String)
 given StringWrapper[MultilineString] {
@@ -40,7 +66,18 @@ case class Details(
 
   invitation: Details.Invitation,
   program: Details.Program
-) derives Format, FormBuilder
+) derives Format, FormBuilder {
+  def uploads: Seq[String] = (
+    Seq()
+    :++ general.headerImages
+    :+ home.image
+    :+ story.image
+    :++ weddingParty.groomsmen.map(_.image)
+    :++ weddingParty.bridesmaids.map(_.image)
+    :++ photos.photos.map(_.image)
+    :++ registry.items.map(_.image)
+  ).map(_.path.stripPrefix("/uploads/"))
+}
 
 object Details {
   val VERSION = 1
