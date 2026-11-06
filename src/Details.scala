@@ -43,6 +43,12 @@ case class Details(
 ) derives Format, FormBuilder
 
 object Details {
+  val VERSION = 1
+  def fromJson(json: JsValue, version: Int): Option[Details] = {
+    if (version == VERSION) json.asOpt[Details]
+    else None
+  }
+
   case class General(
     underConstruction: Boolean,
     contactEmail: String,

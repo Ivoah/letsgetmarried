@@ -47,12 +47,12 @@ object Database {
   }
 
   def getDetails(): Details = {
-    sql"SELECT details FROM details ORDER BY date DESC LIMIT 1"
-      .query(r => Json.parse(r.getString("details")).asOpt[Details]).flatten.headOption.getOrElse(FormBuilder.default[Details])
+    sql"SELECT details, version FROM details ORDER BY date DESC LIMIT 1"
+      .query(r => Details.fromJson(Json.parse(r.getString("details")), r.getInt("version"))).flatten.headOption.getOrElse(FormBuilder.default[Details])
   }
 
   def saveDetails(details: Details): Boolean = {
-    sql"INSERT INTO details (details, date) VALUES (${Json.stringify(Json.toJson(details))}, datetime('now', 'localtime'))".update() == 1
+    sql"INSERT INTO details (details, version, date) VALUES (${Json.stringify(Json.toJson(details))}, ${Details.VERSION}, datetime('now', 'localtime'))".update() == 1
   }
 
   def getAllRSVPs(): Seq[RSVP] = sql"SELECT * FROM rsvp".query(RSVP.fromResultSet)
